@@ -1,4 +1,4 @@
-# 🎮 RizkybyMONITOR
+# RizkybyMONITOR
 
 A state-of-the-art, frameless, multi-window system monitoring dashboard built for Linux Desktop Environments (KDE Plasma, GNOME, XFCE, etc.). Powered by Python, PyWebView, WebKitGTK, and Chart.js.
 
@@ -7,20 +7,20 @@ A state-of-the-art, frameless, multi-window system monitoring dashboard built fo
 
 ---
 
-## ✨ Features
+## Features
 
-- **🚀 Multi-Window Architecture**: Duplicate independent monitoring windows (`Ctrl + N`) with persistent geometry, color themes, and per-card states saved in `config.json`.
-- **📊 Advanced Hardware Telemetry**:
+- **Multi-Window Architecture**: Duplicate independent monitoring windows (`Ctrl + N`) with persistent geometry, color themes, and per-card states saved in `config.json`.
+- **Advanced Hardware Telemetry**:
   - **CPU**: Core-by-core frequency & load monitoring with live line charts.
   - **GPU**: Multi-metric GPU load, VRAM utilization, temperature, and power draw.
   - **RAM & Swap**: Real-time physical RAM, zRAM (zstd engine), and System Swap tracking.
   - **Storage (NVMe/SSD)**: Live disk I/O rates, TBW written/remaining lifetime, and SMART health monitoring.
   - **Network & Nethogs**: Active interface IP/MAC addresses, live per-process bandwidth speeds, and Wi-Fi signal strength.
   - **Battery & Thermal**: Real-time battery charge level, status, and CPU package temperature.
-- **🎨 Custom Color Palettes & Dual Theme Modes**:
+- **Custom Color Palettes & Dual Theme Modes**:
   - 12 Dark Palettes + 10 Light Palettes with automatic dark text contrast.
   - Independent palette memory per window instance.
-- **🔍 Rich Interactivity**:
+- **Rich Interactivity**:
   - **Left Click**: Toggle Fullscreen Zoom mode on any hardware card.
   - **Right Click**: Toggle Raw Monospaced Log/Detail view.
   - **Middle Click**: Instant copy tooltip or card text content to clipboard with Toast feedback.
@@ -29,7 +29,7 @@ A state-of-the-art, frameless, multi-window system monitoring dashboard built fo
 
 ---
 
-## ⌨️ Keyboard Shortcuts
+## Keyboard Shortcuts
 
 | Shortcut | Description |
 | :--- | :--- |
@@ -42,7 +42,7 @@ A state-of-the-art, frameless, multi-window system monitoring dashboard built fo
 
 ---
 
-## 🛠️ Installation & Setup
+## Installation & Setup
 
 ### Prerequisites
 
@@ -75,6 +75,6 @@ python3 app.py
 
 ---
 
-## 📄 License
+## License
 
 Distributed under the MIT License. See `LICENSE` for more information.
