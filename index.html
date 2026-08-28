@@ -1,0 +1,2618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RizkybyMONITOR</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(10, 15, 30, 0.6);
+            --card-hover-bg: rgba(16, 24, 46, 0.75);
+            --card-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            --card-shadow-hover: 0 0 28px rgba(255, 255, 255, 0.25);
+            --card-border-hover: rgba(255, 255, 255, 0.45);
+            --glass-bg: rgba(30, 41, 59, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --progress-bg: rgba(255, 255, 255, 0.05);
+            --core-bg: rgba(255, 255, 255, 0.03);
+            --core-border: rgba(255, 255, 255, 0.05);
+            --list-bg: rgba(255, 255, 255, 0.03);
+            --header-line: rgba(255, 255, 255, 0.05);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --accent-green: #10b981;
+            --accent-orange: #f59e0b;
+            --accent-red: #ef4444;
+            --accent-cyan: #06b6d4;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            scrollbar-width: none !important;
+            -ms-overflow-style: none !important;
+        }
+
+        ::-webkit-scrollbar {
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
+            background: transparent !important;
+        }
+
+        body {
+            user-select: text;
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.15) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.15) 0px, transparent 50%),
+                radial-gradient(at 0% 100%, rgba(245, 158, 11, 0.15) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            height: 100vh;
+            width: 100vw;
+            /* overflow: hidden removed for tooltip */
+            padding: 1.5vh 2vw;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .mode-btn {
+            transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease;
+        }
+
+        *, *:focus, *:active, *:focus-visible {
+            outline: none !important;
+            -webkit-tap-highlight-color: transparent !important;
+        }
+
+        button:focus, button:active, button:focus-visible,
+        .mode-btn:focus, .mode-btn:active, .mode-btn:focus-visible,
+        .sensor-item:focus, .sensor-item:active,
+        .custom-color-select-box:focus, .custom-color-select-box:active {
+            outline: none !important;
+            box-shadow: none;
+            -webkit-appearance: none;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: auto;
+            min-height: 2.8rem;
+            flex-shrink: 0;
+            gap: 1rem;
+            padding: 0.3rem 0.5rem;
+            -webkit-app-region: drag;
+            user-select: none;
+        }
+
+        .header-title {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .header-title h1 {
+            display: inline-block;
+            white-space: nowrap;
+            font-weight: 800;
+            font-size: 1.6rem;
+            background: linear-gradient(to right, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.1;
+        }
+        
+        .header-title p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+        
+        .sensors-badge-wrapper {
+            flex: 2;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            overflow-x: auto;
+            white-space: nowrap;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            -webkit-app-region: no-drag;
+            margin-left: auto;
+            width: 100%;
+        }
+        .sensors-badge-wrapper::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .sensors-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+            width: max-content;
+            flex-shrink: 0;
+            margin-left: auto;
+        }
+        
+        .sensor-item {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            padding: 0 0.8rem;
+            height: 2.2rem;
+            min-height: 2.2rem;
+            box-sizing: border-box;
+            border-radius: 1.5rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+            font-size: 0.92rem;
+            align-self: center;
+            flex-shrink: 0;
+        }
+
+        .custom-color-select-box {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 2.2rem;
+            min-height: 2.2rem;
+            box-sizing: border-box;
+            gap: 0.35rem;
+            background: var(--glass-bg);
+            border: 1px solid var(--accent-purple);
+            color: var(--accent-purple);
+            border-radius: 1.5rem;
+            padding: 0 0.8rem;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            overflow: visible !important;
+            position: relative;
+            user-select: none;
+            z-index: 999;
+            align-self: center;
+            flex-shrink: 0;
+        }
+
+        .mode-toggle-group {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 2.2rem;
+            min-height: 2.2rem;
+            box-sizing: border-box;
+            gap: 0.15rem;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 1.5rem;
+            padding: 0.12rem 0.25rem;
+            align-self: center;
+            flex-shrink: 0;
+            overflow: visible !important;
+            position: relative;
+            z-index: 100;
+        }
+        .mode-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1rem;
+            padding: 0 0.55rem;
+            height: 1.9rem;
+            border-radius: 1.2rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            align-self: center;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 1;
+        }
+        .mode-btn:hover {
+            color: var(--text-main);
+            transform: scale(1.1);
+        }
+        .mode-btn.active {
+            background: var(--accent-purple);
+            color: #ffffff;
+            box-shadow: 0 0 12px var(--accent-purple), 0 0 22px var(--accent-purple);
+            position: relative;
+            z-index: 10;
+        }
+
+        .dashboard {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 0.8rem;
+            min-height: 0; 
+            padding-bottom: 0.5rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 1.2rem;
+            padding: 0.8rem 1rem;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: filter 0.25s ease, transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+        }
+        
+        .card:hover {
+            background: var(--card-hover-bg);
+            box-shadow: var(--card-shadow-hover);
+            border-color: var(--card-border-hover);
+        }
+
+        /* Clean Frosted Cards with Theme Tint */
+        .card-cpu, .card-ram, .card-gpu, .card-net, .card-ssd, .card-battery {
+            box-shadow: var(--card-shadow);
+        }
+
+        .card.fullscreen {
+            position: fixed;
+            top: 2vh;
+            left: 2vw;
+            width: 96vw;
+            height: 96vh;
+            z-index: 9999;
+            background: var(--card-bg) !important;
+            backdrop-filter: blur(25px);
+            box-shadow: var(--card-shadow-hover) !important;
+            border: 1px solid var(--glass-border);
+            transition: all 0.25s ease-in-out;
+            padding: 2.5vh 2vw;
+            color: var(--text-main);
+        }
+
+        .card.fullscreen .cores-grid {
+            grid-template-columns: repeat(auto-fit, minmax(5rem, 1fr)) !important;
+            gap: 0.6rem !important;
+            max-height: none !important;
+        }
+
+        .card.fullscreen .core-box {
+            min-height: 2.8rem !important;
+            padding: 0.35rem 0.2rem !important;
+        }
+
+        .card.fullscreen .core-name {
+            font-size: 0.85rem !important;
+        }
+
+        .card.fullscreen .core-val {
+            font-size: 1.1rem !important;
+        }
+
+        .card.fullscreen .core-freq {
+            font-size: 0.8rem !important;
+        }
+
+        .card.fullscreen .metric-header {
+            font-size: 0.95rem !important;
+        }
+
+        .card.fullscreen .metric-value {
+            font-size: 1.05rem !important;
+        }
+
+        .card.fullscreen .list-item {
+            font-size: 0.9rem !important;
+            padding: 0.4rem 0.7rem !important;
+        }
+
+        
+        #fs-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.7);
+            z-index: 9998;
+            backdrop-filter: blur(5px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        #fs-overlay.active {
+            display: block;
+            opacity: 1;
+        }
+
+
+        .card h2 {
+            font-size: clamp(0.85rem, 1.1vw, 1.15rem);
+            margin-bottom: 1vh;
+            display: flex;
+            align-items: center;
+            gap: 0.5vw;
+            border-bottom: 1px solid var(--header-line);
+            padding-bottom: 1vh;
+            flex-shrink: 0;
+            position: relative;
+            cursor: pointer;
+            width: 100%;
+            white-space: nowrap;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .card h2::-webkit-scrollbar { display: none; }
+
+        /* Global tooltips handled in JS */
+
+        .card-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            min-height: 0;
+        }
+
+        .metric {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+                .metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: clamp(0.7rem, 0.9vw, 0.85rem);
+            margin-bottom: 0.5vh;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            gap: 0.5rem;
+            white-space: nowrap;
+            width: 100%;
+            color: var(--text-main);
+        }
+        .metric-header::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .metric-header span {
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .metric-value {
+            font-weight: 700;
+            font-size: clamp(0.75rem, 1vw, 0.9rem);
+            white-space: nowrap;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            display: inline-block;
+        }
+        .metric-value::-webkit-scrollbar {
+            display: none;
+        }
+
+        .auto-scroll-x {
+            overflow-x: auto;
+            white-space: nowrap;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .auto-scroll-x::-webkit-scrollbar {
+            display: none;
+        }
+
+        .progress-bar-bg {
+            background: var(--progress-bg);
+            border-radius: 10px;
+            height: 0.8vh;
+            min-height: 4px;
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease-out;
+            position: relative;
+        }
+
+        .bg-blue { background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan)); }
+        .bg-purple { background: linear-gradient(90deg, var(--accent-purple), var(--accent-blue)); }
+        .bg-green { background: linear-gradient(90deg, var(--accent-green), var(--accent-cyan)); }
+        .bg-orange { background: linear-gradient(90deg, var(--accent-orange), var(--accent-red)); }
+        .bg-red { background: linear-gradient(90deg, var(--accent-red), var(--accent-orange)); }
+        .bg-cyan { background: linear-gradient(90deg, var(--accent-cyan), var(--accent-blue)); }
+
+        /* CPU Cores Grid responsive behavior (Auto-Fit 12x1, 6x2, 4x3, 3x4) */
+        .cores-grid {
+            display: grid;
+            gap: 0.3rem;
+            grid-template-columns: repeat(auto-fit, minmax(4.2rem, 1fr));
+            width: 100%;
+        }
+
+        .core-box {
+            background: var(--core-bg);
+            border: 1px solid var(--core-border);
+            border-radius: 6px;
+            padding: 0.2rem 0.15rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            align-items: center;
+            min-height: 2.2rem;
+            flex-shrink: 0;
+        }
+
+        .core-name {
+            font-size: clamp(0.6rem, 0.75vw, 0.75rem);
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .core-val {
+            font-weight: 700;
+            font-size: clamp(0.7rem, 0.9vw, 0.85rem);
+        }
+
+        .core-freq {
+            font-size: clamp(0.55rem, 0.7vw, 0.7rem);
+            color: var(--text-muted);
+        }
+        
+        .list-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            overflow-y: auto;
+        }
+        
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            background: var(--list-bg);
+            color: var(--text-main);
+            padding: 0.3rem 0.5rem;
+            border-radius: 6px;
+            font-size: clamp(0.65rem, 0.85vw, 0.8rem);
+            white-space: nowrap;
+            overflow: hidden;
+            min-height: 1.6rem; /* Prevent squishing */
+            flex-shrink: 0; /* Prevent flex squishing */
+        }
+        
+        .list-name { 
+            color: var(--text-muted); 
+            overflow-x: auto;
+            white-space: nowrap;
+            /* Hide scrollbar for list-name */
+            scrollbar-width: none;
+        }
+        .list-name::-webkit-scrollbar { display: none; }
+        .list-val { font-weight: 600; flex-shrink: 0; padding-left: 5px; }
+        
+        
+        .two-cols {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5vw;
+            height: 100%;
+            flex: 1;
+            min-height: 0;
+            min-width: 0;
+        }
+        
+        .split-2-1 {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5vw;
+            height: 100%;
+            flex: 1;
+            min-height: 0;
+            min-width: 0;
+        }
+        
+        .card-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            overflow-y: auto;
+            min-width: 0;
+            min-height: 0;
+        }
+        
+        .card-cpu { grid-column: span 2; }
+        .card-ram { grid-column: span 2; }
+        .card-gpu { grid-column: span 1; }
+        .card-net { grid-column: span 1; }
+        .card-disk { grid-column: span 2; }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            min-height: 0;
+            margin-top: 1vh;
+        }
+        
+        .chart-container-large {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            min-height: 0;
+        }
+
+        .card-inner-visual {
+            display: contents;
+        }
+        .card-inner-details {
+            display: none;
+            flex: 1;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: clamp(0.7rem, 0.9vw, 0.85rem);
+            color: var(--text-main) !important;
+            white-space: pre-wrap;
+            margin-top: 1vh;
+            padding: 1vh 1vw;
+            line-height: 1.5;
+            min-height: 0;
+            scrollbar-width: none;
+            background: var(--core-bg);
+            border: 1px solid var(--core-border);
+            border-radius: 8px;
+        }
+        .card-inner-details::-webkit-scrollbar { display: none; }
+        .card.show-details > :not(h2):not(.disk-header-row):not(.card-inner-details) {
+            display: none !important;
+        }
+        .card.show-details .card-inner-details {
+            display: block !important;
+            height: calc(100% - 2.8rem);
+            overflow-y: auto !important;
+            pointer-events: auto !important;
+            user-select: text;
+        }
+        .card.show-details {
+            overflow: auto !important;
+        }
+    
+                
+
+        .card-toast {
+            position: fixed;
+            background-color: rgba(16, 185, 129, 0.95);
+            color: #fff;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            z-index: 10000;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+            transform: translate(-50%, -50%);
+            backdrop-filter: blur(8px);
+        }
+        .card-toast.show {
+            opacity: 1;
+        }
+
+        .disk-select-dropdown {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-color: var(--glass-bg) !important;
+            color: var(--accent-orange) !important;
+            border: 1px solid var(--accent-orange) !important;
+            border-radius: 6px;
+            padding: 3px 22px 3px 8px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            outline: none;
+            cursor: pointer;
+            width: max-content;
+            flex-shrink: 0;
+            background-image: url('data:image/svg+xml;utf8,<svg fill="%23f59e0b" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>') !important;
+            background-repeat: no-repeat !important;
+            background-position: right 4px center !important;
+        }
+        .disk-select-dropdown:hover, .disk-select-dropdown:focus {
+            background-color: var(--card-hover-bg) !important;
+            box-shadow: 0 0 15px rgba(249, 115, 22, 0.35);
+        }
+        .disk-select-dropdown option {
+            background-color: var(--bg-color) !important;
+            color: var(--text-main) !important;
+            padding: 6px;
+        }
+
+        .custom-disk-select-box {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: var(--glass-bg);
+            border: 1px solid var(--accent-orange);
+            color: var(--accent-orange);
+            border-radius: 5px;
+            padding: 2px 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            overflow: hidden;
+            max-width: 100%;
+            min-width: 0;
+            flex-shrink: 0;
+            position: relative;
+            user-select: none;
+        }
+
+        .custom-disk-options-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 4px;
+            background: var(--bg-color);
+            border: 1px solid var(--accent-orange);
+            border-radius: 6px;
+            z-index: 9999;
+            min-width: 190px;
+            max-height: 180px;
+            overflow-y: auto;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.7);
+        }
+        .custom-disk-options-menu.show {
+            display: block;
+        }
+        .custom-disk-option-item {
+            padding: 6px 10px;
+            font-size: 0.75rem;
+            color: var(--text-main);
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .custom-disk-option-item:hover, .custom-disk-option-item.selected {
+            background: rgba(249, 115, 22, 0.25);
+            color: var(--accent-orange);
+            font-weight: bold;
+        }
+
+        .custom-color-select-box {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: var(--glass-bg);
+            border: 1px solid var(--accent-purple);
+            color: var(--accent-purple);
+            border-radius: 30px;
+            padding: 0.4vh 1vw;
+            font-size: clamp(0.75rem, 1.1vw, 0.95rem);
+            font-weight: 600;
+            cursor: pointer;
+            overflow: visible !important;
+            position: relative;
+            user-select: none;
+            z-index: 999;
+        }
+
+        .custom-color-options-menu {
+            display: none;
+            position: absolute;
+            top: 110%;
+            left: 0;
+            margin-top: 4px;
+            background: var(--bg-color);
+            border: 1px solid var(--accent-purple);
+            border-radius: 14px;
+            z-index: 99999;
+            min-width: 180px;
+            max-height: 220px;
+            overflow-y: auto;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.7);
+        }
+        .custom-color-options-menu.show {
+            display: block;
+        }
+        .custom-color-option-item {
+            padding: 7px 12px;
+            font-size: 0.8rem;
+            color: var(--text-main);
+            cursor: pointer;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.2s;
+        }
+        .custom-color-option-item:hover, .custom-color-option-item.selected {
+            background: rgba(139, 92, 246, 0.25);
+            color: var(--accent-purple);
+            font-weight: bold;
+        }
+
+        .mode-toggle-group {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px;
+            padding: 2px 4px;
+        }
+        .mode-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            padding: 2px 8px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .mode-btn:hover {
+            color: var(--text-main);
+        }
+        .mode-btn.active {
+            background: var(--accent-purple);
+            color: #ffffff;
+            box-shadow: 0 0 10px var(--accent-purple);
+        }
+    </style>
+</head>
+<body>
+    <div id="fs-overlay"></div>
+    
+
+    <header>
+        <div class="header-title">
+            <div class="auto-scroll-x" style="overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
+                <h1 data-tooltip="header" style="cursor: pointer;">RizkybyMONITOR</h1>
+            </div>
+        </div>
+        <div class="sensors-badge-wrapper auto-scroll-x" id="sensors-badge-scroll-wrapper">
+            <div class="sensors-badge" id="header-sensors-badge">
+                <!-- Color Selector (Replicating Disk Selector format) -->
+                <div class="custom-color-select-box" id="custom-color-select" onclick="toggleColorMenu(event)" data-tooltip="color_select">
+                    <div class="auto-scroll-x" id="custom-color-label" style="max-width: 130px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
+                        <span id="color-label-text">🎨 Neon Cyberpunk</span>
+                    </div>
+                    <span style="font-size: 0.6rem; margin-left: 2px;">▼</span>
+                    <div class="custom-color-options-menu" id="custom-color-options">
+                        <!-- Populated via JS -->
+                    </div>
+                </div>
+
+                <!-- Light / Dark Mode Toggle Buttons -->
+                <div class="mode-toggle-group" data-tooltip="mode_toggle">
+                    <button id="btn-mode-dark" class="mode-btn active" onclick="setThemeMode('dark')" title="Dark Mode">🌙</button>
+                    <button id="btn-mode-light" class="mode-btn" onclick="setThemeMode('light')" title="Light Mode">☀️</button>
+                </div>
+
+                <div class="sensor-item" data-tooltip="temperature"><span style="color:var(--accent-red)">🌡️</span> <span id="temp-val">0°C</span></div>
+                <div class="sensor-item" data-tooltip="battery"><span style="color:var(--accent-green)">🔋</span> <span id="batt-val">100%</span></div>
+                <button id="btn-app-duplicate" class="mode-btn" onclick="duplicateWindow()" oncontextmenu="toggleAlwaysOnTop(); return false;" data-tooltip="duplicate" style="font-weight: 700; font-size: 1.05rem; color: var(--accent-blue);" title="Left-Click: Duplicate Window | Right-Click: Toggle Keep Above">🗗</button>
+                <button id="btn-app-quit" class="mode-btn" onclick="quitApp()" oncontextmenu="exitWindow(); return false;" data-tooltip="quit" style="font-weight: 700; font-size: 1.05rem; color: var(--accent-blue);" title="Left-Click: Quit All & Save | Right-Click: Exit Window">⏻</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard">
+        <!-- CPU Card -->
+        <div class="card card-cpu">
+            <h2 style="color: var(--accent-blue)" data-tooltip="cpu">
+                ⚙️ CPU
+            </h2>
+            <div class="card-content" style="display:flex; flex-direction:column; height:100%; gap:0.4vh; overflow:hidden;">
+                <!-- 1. Top Section (1/3): Total Usage + CPU Chart -->
+                <div style="flex: 1 1 33.33%; min-height: 0; display:flex; flex-direction:column; gap:0.2vh;">
+                    <div class="metric" style="flex-shrink:0;">
+                        <div class="metric-header">
+                            <span>Total Usage</span>
+                            <span class="metric-value" id="cpu-total">0%</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill bg-blue" id="cpu-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="chart-container" style="flex: 1; min-height: 0; position: relative; margin-top:0.2vh;">
+                        <canvas id="cpuChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- 2. Middle Section (1/3): CPU Cores Grid (Auto-fit 12x1, 6x2, 4x3, 3x4 with Autoscroll/Manualscroll) -->
+                <div class="cores-wrapper" id="cpu-cores-wrapper" style="flex: 1 1 33.33%; min-height: 0; overflow-y:auto; scrollbar-width:none; display:flex; align-items:center;">
+                    <div class="cores-grid" id="cpu-cores" style="width:100%;">
+                        <!-- Cores populated by JS -->
+                    </div>
+                </div>
+
+                <!-- 3. Bottom Section (1/3): Processes List (Only this section is scrollable) -->
+                <div style="flex: 1 1 33.33%; min-height: 0; display:flex; flex-direction:column; border-top:1px solid rgba(255,255,255,0.06); padding-top:0.3vh; overflow:hidden;">
+                    <div class="metric-header" style="font-weight:600; flex-shrink:0; margin-bottom:0.2vh; color:var(--accent-blue);">Processes:</div>
+                    <div class="list-container" id="top-cpu" style="flex:1; min-height:0; overflow-y:auto; scrollbar-width:none;">
+                        <!-- Populated via JS -->
+                    </div>
+                </div>
+            </div>
+            <div class="card-inner-details" id="cpu-details">Loading CPU Details...</div>
+        </div>
+
+        <!-- RAM & ZRAM & SWAP -->
+        <div class="card card-ram">
+            <h2 style="color: var(--accent-green)" data-tooltip="ram">🧠 Memory Hierarchy</h2>
+            <div class="card-content" style="display:flex; flex-direction:column; height:100%; gap:0.5vh; overflow:hidden;">
+                <!-- Top 1/3: RAM, ZRAM, SWAP progress bars (Ratio 1:2) -->
+                <div style="flex: 1 1 33%; min-height: 0; display:flex; flex-direction:column; justify-content:space-evenly;">
+                    <div class="metric">
+                        <div class="metric-header">
+                            <span>Physical RAM</span>
+                            <span class="metric-value" id="ram-text">0 / 16 GB</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill bg-green" id="ram-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="metric" data-tooltip="zram">
+                        <div class="metric-header">
+                            <span>ZRAM (Compressed)</span>
+                            <span class="metric-value" id="zram-text">0 / 8 GB</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill bg-orange" id="zram-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="metric" data-tooltip="swap">
+                        <div class="metric-header">
+                            <span>External SWAP</span>
+                            <span class="metric-value" id="swap-text">0 / 32 GB</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill bg-red" id="swap-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Bottom 2/3: Combined 3-Line Memory Chart & Processes List (Ratio 1:2) -->
+                <div style="flex: 2 1 66%; min-height: 0; display:flex; flex-direction:column; border-top:1px solid rgba(255,255,255,0.06); padding-top:0.4vh;">
+                    <div class="chart-container" style="flex: 1 1 45%; min-height: 0; position: relative;">
+                        <canvas id="memChart"></canvas>
+                    </div>
+                    <div class="metric-header" style="font-weight:600; flex-shrink:0; margin-top:0.4vh; margin-bottom:0.3vh; color:var(--accent-green);">Processes:</div>
+                    <div class="list-container" id="top-mem" style="flex: 1 1 55%; min-height: 0; overflow-y:auto; scrollbar-width:none;">
+                        <!-- Populated via JS -->
+                    </div>
+                </div>
+            </div>
+            <div class="card-inner-details" id="ram-details">Loading RAM Details...</div>
+        </div>
+
+        <!-- GPU -->
+        <div class="card card-gpu">
+            <h2 style="color: var(--accent-purple);" data-tooltip="gpu">
+                🎨 GPU
+            </h2>
+            <div class="card-content" style="display:flex; flex-direction:column; height:100%; gap:0.4vh; overflow:hidden;">
+                
+                <!-- Bagian 1 (Atas - 50%): 2x2 Engine Metrics + GPU Chart -->
+                <div style="flex: 1 1 50%; min-height: 0; display:flex; flex-direction:column; gap:0.3vh;">
+                    <!-- 2x2 Grid of 4 GPU Engine Usage Progress Bar Sliders (Fix 1:1 Kiri-Kanan + Auto-Scroll-X) -->
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.4rem; flex-shrink:0;">
+                        <div class="metric" style="min-width:0; overflow:hidden;">
+                            <div class="metric-header" style="margin-bottom:2px; font-size:0.68rem; display:flex; align-items:center; justify-content:space-between; gap:4px; min-width:0;">
+                                <div class="auto-scroll-x" style="flex:1; min-width:0; overflow-x:auto; white-space:nowrap; scrollbar-width:none; -ms-overflow-style:none;">
+                                    <span>Render/3D</span>
+                                </div>
+                                <span class="metric-value" id="gpu-rcs-val" style="font-size:0.68rem; color:var(--accent-purple); flex-shrink:0; font-weight:600;">0.0%</span>
+                            </div>
+                            <div class="progress-bar-bg" style="height:0.4vh;">
+                                <div class="progress-bar-fill bg-purple" id="gpu-rcs-bar" style="width: 0%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="metric" style="min-width:0; overflow:hidden;">
+                            <div class="metric-header" style="margin-bottom:2px; font-size:0.68rem; display:flex; align-items:center; justify-content:space-between; gap:4px; min-width:0;">
+                                <div class="auto-scroll-x" style="flex:1; min-width:0; overflow-x:auto; white-space:nowrap; scrollbar-width:none; -ms-overflow-style:none;">
+                                    <span>Blitter/2D</span>
+                                </div>
+                                <span class="metric-value" id="gpu-bcs-val" style="font-size:0.68rem; color:var(--accent-blue); flex-shrink:0; font-weight:600;">0.0%</span>
+                            </div>
+                            <div class="progress-bar-bg" style="height:0.4vh;">
+                                <div class="progress-bar-fill bg-blue" id="gpu-bcs-bar" style="width: 0%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="metric" style="min-width:0; overflow:hidden;">
+                            <div class="metric-header" style="margin-bottom:2px; font-size:0.68rem; display:flex; align-items:center; justify-content:space-between; gap:4px; min-width:0;">
+                                <div class="auto-scroll-x" style="flex:1; min-width:0; overflow-x:auto; white-space:nowrap; scrollbar-width:none; -ms-overflow-style:none;">
+                                    <span>Video Decode</span>
+                                </div>
+                                <span class="metric-value" id="gpu-vcs-val" style="font-size:0.68rem; color:var(--accent-cyan); flex-shrink:0; font-weight:600;">0.0%</span>
+                            </div>
+                            <div class="progress-bar-bg" style="height:0.4vh;">
+                                <div class="progress-bar-fill bg-cyan" id="gpu-vcs-bar" style="width: 0%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="metric" style="min-width:0; overflow:hidden;">
+                            <div class="metric-header" style="margin-bottom:2px; font-size:0.68rem; display:flex; align-items:center; justify-content:space-between; gap:4px; min-width:0;">
+                                <div class="auto-scroll-x" style="flex:1; min-width:0; overflow-x:auto; white-space:nowrap; scrollbar-width:none; -ms-overflow-style:none;">
+                                    <span>Video Enhance</span>
+                                </div>
+                                <span class="metric-value" id="gpu-vecs-val" style="font-size:0.68rem; color:var(--accent-orange); flex-shrink:0; font-weight:600;">0.0%</span>
+                            </div>
+                            <div class="progress-bar-bg" style="height:0.4vh;">
+                                <div class="progress-bar-fill bg-orange" id="gpu-vecs-bar" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- GPU Line Chart -->
+                    <div class="chart-container" style="flex: 1; min-height: 0; position: relative; margin-top:0.2vh;">
+                        <canvas id="gpuChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Bagian 2 (Bawah - 50%): Processes Header + List with 4 Category Badges -->
+                <div style="flex: 1 1 50%; min-height: 0; display:flex; flex-direction:column; border-top:1px solid rgba(255,255,255,0.06); padding-top:0.3vh; overflow:hidden;">
+                    <div class="metric-header" style="font-weight:600; flex-shrink:0; margin-bottom:0.2vh; color:var(--accent-purple);">Processes:</div>
+                    <div class="list-container" id="top-gpu" style="flex:1; min-height:0; overflow-y:auto; scrollbar-width:none;">
+                        <!-- Populated via JS -->
+                    </div>
+                </div>
+
+            </div>
+            <div class="card-inner-details" id="gpu-details">Loading GPU Details...</div>
+        </div>
+
+        <!-- Network -->
+        <div class="card card-net">
+            <h2 style="color: var(--accent-cyan)" data-tooltip="network">🌐 Network I/O</h2>
+            <div class="card-content" style="display:flex; flex-direction:column; height:100%; gap:0.5vh; overflow:hidden;">
+                <div style="flex: 1 1 50%; min-height: 0; display:flex; flex-direction:column; justify-content:space-between;">
+                    <div style="display:flex; justify-content:space-between; width:100%;">
+                        <div class="metric" style="width:48%;">
+                            <div class="metric-header" style="justify-content: flex-start; gap: 4px;">
+                                <span style="color:var(--accent-cyan); font-size:0.6rem;">▼</span>
+                                <span class="metric-value" id="net-rx" style="font-size: 0.68rem !important; font-weight: 700 !important; color: var(--accent-cyan);">0 KB/s</span>
+                            </div>
+                        </div>
+                        <div class="metric" style="width:48%;">
+                            <div class="metric-header" style="justify-content: flex-end; gap: 4px;">
+                                <span style="color:var(--accent-blue); font-size:0.6rem;">▲</span>
+                                <span class="metric-value" id="net-tx" style="font-size: 0.68rem !important; font-weight: 700 !important; color: var(--accent-blue);">0 KB/s</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-container" style="flex:1; min-height:0; width:100%; position:relative; margin-top:0.3vh;">
+                        <canvas id="netChart"></canvas>
+                    </div>
+                </div>
+                <div style="flex: 1 1 50%; min-height: 0; display:flex; flex-direction:column; overflow:hidden; border-top:1px solid rgba(255,255,255,0.06); padding-top:0.4vh;">
+                    <div class="metric-header" style="font-weight:600; flex-shrink:0; margin-bottom:0.3vh; color:var(--accent-cyan);">Processes:</div>
+                    <div class="list-container" id="top-net" style="flex:1; min-height:0; overflow-y:auto; scrollbar-width:none;">
+                        <!-- Populated via JS -->
+                    </div>
+                </div>
+            </div>
+            <div class="card-inner-details" id="net-details">Loading Network Details...</div>
+        </div>
+
+        <!-- Disk -->
+        <div class="card card-disk">
+            <div class="disk-header-row" style="display:flex; justify-content:space-between; align-items:center; width:100%; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.8vh; margin-bottom: 0.8vh; gap: 8px; box-sizing: border-box; flex-shrink: 0;">
+                <div style="width: 50%; min-width: 0; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none;" class="auto-scroll-x">
+                    <h2 style="color: var(--accent-orange); border:none; margin:0; padding:0; white-space: nowrap; font-size: clamp(0.85rem, 1.05vw, 1.15rem); width: max-content;" data-tooltip="ssd">💽 Disk I/O &amp; Storage</h2>
+                </div>
+                <div class="disk-selector-wrapper auto-scroll-x" style="width: 50%; min-width: 0; display:flex; align-items:center; justify-content: flex-start; gap: 4px; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; white-space: nowrap;">
+                    <span style="font-size:0.72rem; color:var(--accent-orange); font-weight:600; opacity:0.9; flex-shrink: 0;">Disk:</span>
+                    <select id="disk-select" class="disk-select-dropdown" style="flex-shrink: 0;" onchange="onDiskSelect(this.value)">
+                        <option value="">Detecting Physical Disks...</option>
+                    </select>
+                </div>
+            </div>
+            <div class="split-2-1">
+                <div class="card-content">
+                    <div style="display:flex; justify-content:space-between; width:100%;">
+                        <div class="metric" style="width:48%;">
+                            <div class="metric-header" style="justify-content: flex-start; gap: 5px;">
+                                <span style="color:var(--accent-orange); font-weight:700;">R:</span>
+                                <span class="metric-value" id="disk-read" style="color:var(--accent-orange); font-weight:700;">0 KB/s</span>
+                            </div>
+                        </div>
+                        <div class="metric" style="width:48%;">
+                            <div class="metric-header" style="justify-content: flex-end; gap: 5px;">
+                                <span style="color:var(--accent-red); font-weight:700;">W:</span>
+                                <span class="metric-value" id="disk-write" style="color:var(--accent-red); font-weight:700;">0 KB/s</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-container-large" style="margin-top: 1vh;">
+                        <canvas id="diskChart"></canvas>
+                    </div>
+                </div>
+                <div class="card-content" style="overflow-y: auto; max-height: 100%; height: 100%; display: flex; flex-direction: column; gap: 0.3vh; scrollbar-width: none; -ms-overflow-style: none;">
+                    <div class="metric-header" style="color:var(--accent-orange); font-weight:600; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:4px; margin-bottom:2px; white-space:normal; word-break:break-word; flex-shrink: 0;" id="selected-disk-name">Portable SSD (sda)</div>
+                    
+                    <div class="metric" style="margin-top:0.3vh; flex-shrink: 0;">
+                        <div class="metric-header" style="margin-bottom:0;" id="label-stat-1">TBW Used (Written)</div>
+                        <span class="metric-value" style="color:var(--accent-red); white-space:normal; word-break:break-word; font-size:clamp(0.65rem, 0.8vw, 0.8rem);" id="val-stat-1">8.902 TB</span>
+                    </div>
+                    
+                    <div class="metric" style="margin-top:0.3vh; flex-shrink: 0;">
+                        <div class="metric-header" style="margin-bottom:0;" id="label-stat-2">TBW Remaining Life / Health</div>
+                        <span class="metric-value" style="color:var(--accent-green); white-space:normal; word-break:break-word; font-size:clamp(0.65rem, 0.8vw, 0.8rem);" id="val-stat-2">591.098 TB</span>
+                    </div>
+                    
+                    <div class="metric" style="margin-top:0.3vh; flex-shrink: 0;">
+                        <div class="metric-header" style="margin-bottom:0;" id="label-stat-3">Drive Type & Transport</div>
+                        <span class="metric-value" style="color:var(--accent-cyan); white-space:normal; word-break:break-word; font-size:clamp(0.65rem, 0.8vw, 0.8rem);" id="val-stat-3">Portable SSD (USB)</span>
+                    </div>
+
+                    <div class="metric" style="margin-top:0.3vh; flex-shrink: 0;">
+                        <div class="metric-header" style="margin-bottom:0;" id="label-stat-4">SMART Health / Temp</div>
+                        <span class="metric-value" style="color:var(--accent-purple); white-space:normal; word-break:break-word; font-size:clamp(0.65rem, 0.8vw, 0.8rem);" id="val-stat-4">PASSED | 38 °C</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card-inner-details" id="disk-details">Loading Disk Details...</div>
+        </div>
+    </div>
+
+    <script>
+        // Global JS Tooltips
+        window.hardwareTooltips = {
+            header: "<strong>🎮 RizkybyMONITOR - Controls & Dashboard Guide:</strong><br>• <strong>Left Click:</strong> Toggle Fullscreen Zoom Mode on any card<br>• <strong>Right Click:</strong> Toggle Raw Detailed Long Text Mode<br>• <strong>Middle Click on Card:</strong> Copy visible card text content to Clipboard<br>• <strong>Middle Click on Header/Title:</strong> Copy Hover Tooltip Information to Clipboard<br>• <strong>Mouse Wheel:</strong> Smooth Manual Scroll (Auto-Scroll pauses & resumes seamlessly)<br>• <strong>Ctrl + Mouse Wheel:</strong> Adjust Dashboard UI Font Size & Zoom Level<br>• <strong>Ctrl + Q:</strong> Quit All Windows & Save Layout<br>• <strong>Alt + Q:</strong> Exit Current Window & Remove Memory<br>• <strong>Ctrl + N:</strong> Duplicate Window<br>• <strong>Ctrl + Shift + A:</strong> Toggle Keep Above Other (Pin Window)<br>• <strong>Alt + F3:</strong> Open OS Window Operations Menu",
+            cpu: "Loading CPU Model...",
+            gpu: "Loading GPU Model...",
+            ram: "Primary Volatile Memory (Physical RAM)",
+            zram: "Compressed RAM Swap Pool (zstd Engine)",
+            swap: "System Swap Memory Subsystem",
+            ssd: "Storage Devices & Drive Telemetry",
+            battery: "Power Management & Battery Status",
+            temperature: "<strong>🌡️ System Temperature:</strong><br>Monitors real-time CPU package thermal sensors.",
+            mode_toggle: "<strong>🌙 / ☀️ Theme Mode Toggle:</strong><br>Switch between Dark Mode and Light Mode with independent color palettes per window.",
+            color_select: "<strong>🎨 Color Palette Selector:</strong><br>Choose a custom vibrant color palette for the current window.",
+            network: "<strong>Connection Status:</strong> CONNECTED (Wi-Fi Wireless)<br><strong>Wi-Fi SSID:</strong> <span style='color:var(--accent-cyan); font-weight:800;'>Brambang 313</span><br><strong>IP Address:</strong> wlo1: 192.168.1.60/24",
+            duplicate: "<strong>🗗 Duplicate Controls:</strong><br>• <strong>Left Click / Ctrl+N:</strong> Duplicate Window<br>• <strong>Right Click / Ctrl+Shift+A:</strong> Toggle Keep Above Other (Pin Window)",
+            quit: "<strong>⏻ Quit Controls:</strong><br>• <strong>Left Click / Ctrl+Q:</strong> Quit All Windows & Save Layout<br>• <strong>Right Click / Alt+Q:</strong> Exit Current Window & Remove Memory"
+        };
+
+        let globalTooltip = document.createElement('div');
+        globalTooltip.style.position = 'absolute';
+        globalTooltip.style.zIndex = '9999';
+        globalTooltip.style.background = 'var(--card-bg)';
+        globalTooltip.style.border = '1px solid var(--glass-border)';
+        globalTooltip.style.color = 'var(--text-main)';
+        globalTooltip.style.backdropFilter = 'blur(16px)';
+        globalTooltip.style.padding = '1.5vh 1.5vw';
+        globalTooltip.style.borderRadius = '8px';
+        globalTooltip.style.fontSize = 'clamp(0.75rem, 0.9vw, 0.9rem)';
+        globalTooltip.style.boxShadow = '0px 10px 30px rgba(0,0,0,0.8)';
+        globalTooltip.style.transition = 'opacity 0.3s';
+        globalTooltip.style.opacity = '0';
+        globalTooltip.style.pointerEvents = 'none';
+        globalTooltip.style.whiteSpace = 'normal';
+        globalTooltip.style.lineHeight = '1.5';
+        document.body.appendChild(globalTooltip);
+
+        let currentTooltipKey = null;
+
+        document.addEventListener('mouseover', (e) => {
+            let target = e.target.closest('[data-tooltip]');
+            if (target) {
+                let key = target.getAttribute('data-tooltip');
+                currentTooltipKey = key;
+                globalTooltip.innerHTML = window.hardwareTooltips[key] || key;
+                
+                if(key === 'gpu') globalTooltip.style.borderColor = 'var(--accent-purple)';
+                else if(key === 'cpu') globalTooltip.style.borderColor = 'var(--accent-blue)';
+                else globalTooltip.style.borderColor = 'rgba(255,255,255,0.2)';
+                
+                globalTooltip.style.opacity = '1';
+            }
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            let target = e.target.closest('[data-tooltip]');
+            if (target && globalTooltip.style.opacity === '1') {
+                let key = target.getAttribute('data-tooltip');
+                if (window.hardwareTooltips[key]) {
+                    globalTooltip.innerHTML = window.hardwareTooltips[key];
+                }
+                
+                let x = e.pageX - globalTooltip.offsetWidth - 15;
+                let y = e.pageY - globalTooltip.offsetHeight - 15;
+                
+                if (x < 10) x = e.pageX + 15;
+                if (y < 10) y = e.pageY + 15;
+                
+                globalTooltip.style.left = x + 'px';
+                globalTooltip.style.top = y + 'px';
+            }
+        });
+
+        document.addEventListener('mouseout', (e) => {
+            let target = e.target.closest('[data-tooltip]');
+            if (target) {
+                globalTooltip.style.opacity = '0';
+            }
+        });
+
+        // Set chart default styling
+        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.font.family = "'Outfit', sans-serif";
+        
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 GB';
+            if (bytes < 1024 ** 2) return (bytes / 1024).toFixed(1) + ' KB';
+            if (bytes < 1024 ** 3) return (bytes / (1024 ** 2)).toFixed(1) + ' MB';
+            return (bytes / (1024 ** 3)).toFixed(2) + ' GB';
+        }
+        
+        function formatSpeed(bytesPerSec) {
+            if (bytesPerSec < 1024) return Math.round(bytesPerSec) + ' B/s';
+            if (bytesPerSec < 1024 ** 2) return (bytesPerSec / 1024).toFixed(1) + ' KB/s';
+            return (bytesPerSec / (1024 ** 2)).toFixed(1) + ' MB/s';
+        }
+
+        // Initialize empty arrays for 60 seconds
+        const MAX_DATA_POINTS = 60;
+        let cpuData = Array(MAX_DATA_POINTS).fill(0);
+        let memRamData = Array(MAX_DATA_POINTS).fill(0);
+        let memZramData = Array(MAX_DATA_POINTS).fill(0);
+        let memSwapData = Array(MAX_DATA_POINTS).fill(0);
+        let gpuRcsData = Array(MAX_DATA_POINTS).fill(0);
+        let gpuBcsData = Array(MAX_DATA_POINTS).fill(0);
+        let gpuVcsData = Array(MAX_DATA_POINTS).fill(0);
+        let gpuVecsData = Array(MAX_DATA_POINTS).fill(0);
+        let netRxData = Array(MAX_DATA_POINTS).fill(0);
+        let netTxData = Array(MAX_DATA_POINTS).fill(0);
+        let diskReadData = Array(MAX_DATA_POINTS).fill(0);
+        let diskWriteData = Array(MAX_DATA_POINTS).fill(0);
+        let labels = Array.from({length: MAX_DATA_POINTS}, (_, i) => i);
+
+        // Declare all Chart instances at top scope to prevent TDZ ReferenceErrors in setPalette/setThemeMode
+        let cpuChart = null;
+        let gpuChart = null;
+        let memChart = null;
+        let netChart = null;
+        let diskChart = null;
+
+        // CPU Chart
+        Chart.defaults.maintainAspectRatio = false;
+        const cpuChartCtx = document.getElementById('cpuChart').getContext('2d');
+        cpuChart = new Chart(cpuChartCtx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Usage %',
+                    data: cpuData,
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false,
+                scales: {
+                    x: { display: false },
+                    y: {
+                        display: true,
+                        position: 'right',
+                        min: 0,
+                        max: 100,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.05)',
+                            tickColor: 'rgba(255, 255, 255, 0.2)',
+                            drawBorder: true
+                        },
+                        ticks: {
+                            color: '#94a3b8',
+                            font: { size: 9, weight: '600' },
+                            stepSize: 50,
+                            callback: function(val) { return val + '%'; }
+                        }
+                    }
+                },
+                plugins: { legend: { display: false }, tooltip: { enabled: false } }
+            }
+        });
+
+        // Combined 4-Line GPU Chart (Render/3D, Blitter/2D, Video Decode, Video Encode)
+        const gpuChartCtx = document.getElementById('gpuChart').getContext('2d');
+        gpuChart = new Chart(gpuChartCtx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'Render/3D %', data: gpuRcsData, borderColor: '#a855f7', borderWidth: 2, tension: 0.4, pointRadius: 0 },
+                    { label: 'Blitter/2D %', data: gpuBcsData, borderColor: '#3b82f6', borderWidth: 2, tension: 0.4, pointRadius: 0 },
+                    { label: 'Video Decode %', data: gpuVcsData, borderColor: '#06b6d4', borderWidth: 2, tension: 0.4, pointRadius: 0 },
+                    { label: 'Video Encode %', data: gpuVecsData, borderColor: '#f59e0b', borderWidth: 2, tension: 0.4, pointRadius: 0 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, animation: false,
+                scales: {
+                    x: { display: false },
+                    y: {
+                        display: true,
+                        position: 'right',
+                        min: 0,
+                        max: 100,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.05)',
+                            tickColor: 'rgba(255, 255, 255, 0.2)',
+                            drawBorder: true
+                        },
+                        ticks: {
+                            color: '#94a3b8',
+                            font: { size: 9, weight: '600' },
+                            stepSize: 50,
+                            callback: function(val) { return val + '%'; }
+                        }
+                    }
+                },
+                plugins: { legend: { display: false }, tooltip: { enabled: false } }
+            }
+        });
+
+        // Combined 3-Line Memory Chart (RAM / ZRAM / SWAP)
+        const memChartCtx = document.getElementById('memChart').getContext('2d');
+        memChart = new Chart(memChartCtx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'RAM %', data: memRamData, borderColor: '#10b981', borderWidth: 2, tension: 0.4, pointRadius: 0 },
+                    { label: 'ZRAM %', data: memZramData, borderColor: '#f59e0b', borderWidth: 2, tension: 0.4, pointRadius: 0 },
+                    { label: 'SWAP %', data: memSwapData, borderColor: '#ef4444', borderWidth: 2, tension: 0.4, pointRadius: 0 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, animation: false,
+                scales: {
+                    x: { display: false },
+                    y: {
+                        display: true,
+                        position: 'right',
+                        min: 0,
+                        max: 100,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.05)',
+                            tickColor: 'rgba(255, 255, 255, 0.2)',
+                            drawBorder: true
+                        },
+                        ticks: {
+                            color: '#94a3b8',
+                            font: { size: 9, weight: '600' },
+                            stepSize: 50,
+                            callback: function(val) { return val + '%'; }
+                        }
+                    }
+                },
+                plugins: { legend: { display: false }, tooltip: { enabled: false } }
+            }
+        });
+
+        // Net Chart
+        const netChartCtx = document.getElementById('netChart').getContext('2d');
+        netChart = new Chart(netChartCtx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    { data: netRxData, borderColor: '#06b6d4', borderWidth: 2, tension: 0.4, pointRadius: 0 },
+                    { data: netTxData, borderColor: '#3b82f6', borderWidth: 2, tension: 0.4, pointRadius: 0 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, animation: false,
+                scales: {
+                    x: { display: false },
+                    y: {
+                        display: true,
+                        position: 'right',
+                        min: 0,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.05)',
+                            tickColor: 'rgba(255, 255, 255, 0.2)',
+                            drawBorder: true
+                        },
+                        ticks: {
+                            color: '#94a3b8',
+                            font: { size: 9, weight: '600' },
+                            maxTicksLimit: 3,
+                            callback: function(val) { return formatBytes(val) + '/s'; }
+                        }
+                    }
+                },
+                plugins: { legend: { display: false }, tooltip: { enabled: false } }
+            }
+        });
+
+        // Disk Chart
+        const diskChartCtx = document.getElementById('diskChart').getContext('2d');
+        diskChart = new Chart(diskChartCtx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    { data: diskReadData, borderColor: '#f59e0b', borderWidth: 2, tension: 0.4, pointRadius: 0 },
+                    { data: diskWriteData, borderColor: '#ef4444', borderWidth: 2, tension: 0.4, pointRadius: 0 }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, animation: false,
+                scales: {
+                    x: { display: false },
+                    y: {
+                        display: true,
+                        position: 'right',
+                        min: 0,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.05)',
+                            tickColor: 'rgba(255, 255, 255, 0.2)',
+                            drawBorder: true
+                        },
+                        ticks: {
+                            color: '#94a3b8',
+                            font: { size: 9, weight: '600' },
+                            maxTicksLimit: 3,
+                            callback: function(val) { return formatBytes(val) + '/s'; }
+                        }
+                    }
+                },
+                plugins: { legend: { display: false }, tooltip: { enabled: false } }
+            }
+        });
+
+        let _prevCores = '';
+        let _prevTopCpu = '';
+        let _prevTopMem = '';
+        let _prevTopNet = '';
+        let _prevTopGpu = '';
+
+        async function fetchStats() {
+            try {
+                const response = await fetch('/api/stats');
+                const data = await response.json();
+
+                // Update Hardware Names Tooltips
+                if(data.hardware) {
+                    window.hardwareTooltips.cpu = `<strong>Processor Architecture:</strong><br>${data.hardware.cpu_model}<br><strong>Core Config:</strong> 10 Cores (2 P-Cores, 8 E-Cores) | 12 Threads<br><strong>Cache & Clock:</strong> 12 MB Intel Smart Cache | 4.40 GHz Max Boost`;
+                    window.hardwareTooltips.gpu = `<strong>Graphics Hardware:</strong><br>${data.hardware.gpu_model}<br><strong>Subsystem Driver:</strong> i915 Linux Driver (Intel Iris Xe Graphics)<br><strong>Hardware Engines:</strong> Render/3D (RCS), Video Decode (VCS), Blitter (BCS), Video Enhance (VECS)`;
+                }
+                if(data.details) {
+                    const ramType = Array.isArray(data.details.ram_type) ? data.details.ram_type.join('<br>') : (data.details.ram_type || "Slot 1: 8 GB DDR4-3200 SODIMM<br>Slot 2: 8 GB DDR4-3200 SODIMM");
+                    window.hardwareTooltips.ram = `<strong>Primary Volatile Memory (RAM):</strong><br>${ramType}<br><strong>Architecture:</strong> 16 GB Dual-Channel SODIMM DDR4-3200`;
+                    window.hardwareTooltips.zram = `<strong>ZRAM Compressed Swap Engine:</strong><br>${data.details.zram_info || '8.0 GB zstd compressed in-RAM swap pool'}<br><strong>Compression:</strong> zstd parallel block compression engine`;
+                    window.hardwareTooltips.swap = `<strong>System Swap Subsystem:</strong><br>${data.details.swap_info || 'Active ZRAM Swap Pool (Priority 100)'}<br><strong>Paging Strategy:</strong> Zero disk latency, high-throughput memory exchange`;
+                    window.hardwareTooltips.ssd = `<strong>Storage Devices & Drives:</strong><br>${data.details.ssd_model || 'SanDisk Portable SSD (931.5G) + NVMe (238.5G)'}<br><strong>Health Telemetry:</strong> Real-time TBW (Total Bytes Written) & SMART status`;
+                    window.hardwareTooltips.network = data.details.network_type || 'Intel Wi-Fi + Realtek Gigabit Ethernet';
+                    window.hardwareTooltips.battery = `<strong>Power & Battery Management:</strong><br>${data.details.battery_tech || 'SR Real Battery (100% Charged)'}`;
+                    
+                    if(data.details.raw_cpu && document.getElementById('cpu-details').textContent !== data.details.raw_cpu) document.getElementById('cpu-details').textContent = data.details.raw_cpu;
+                    if(data.details.raw_gpu && document.getElementById('gpu-details').textContent !== data.details.raw_gpu) document.getElementById('gpu-details').textContent = data.details.raw_gpu;
+                    if(data.details.raw_ram && document.getElementById('ram-details').textContent !== data.details.raw_ram) document.getElementById('ram-details').textContent = data.details.raw_ram;
+                    if(data.details.raw_net && document.getElementById('net-details').textContent !== data.details.raw_net) document.getElementById('net-details').textContent = data.details.raw_net;
+                }
+
+                // CPU
+                const cpuUsage = data.cpu.total_usage;
+                document.getElementById('cpu-total').textContent = `${cpuUsage}%`;
+                document.getElementById('cpu-bar').style.width = `${cpuUsage}%`;
+                
+                cpuData.push(cpuUsage);
+                cpuData.shift();
+                cpuChart.update();
+                
+                const coresKey = JSON.stringify(data.cpu.cores) + JSON.stringify(data.cpu.freqs);
+                if (coresKey !== _prevCores) {
+                    _prevCores = coresKey;
+                    const coresContainer = document.getElementById('cpu-cores');
+                    coresContainer.innerHTML = '';
+                    data.cpu.cores.forEach((usage, i) => {
+                        const freq = data.cpu.freqs[i] || 0;
+                        coresContainer.innerHTML += `
+                            <div class="core-box">
+                                <div class="core-name">Core ${i}</div>
+                                <div class="core-val" style="color: ${usage > 80 ? 'var(--accent-red)' : 'var(--accent-blue)'}">${usage}%</div>
+                                <div class="core-freq">${freq}MHz</div>
+                            </div>
+                        `;
+                    });
+                }
+
+                // Top CPU Processes (Numbered)
+                const topCpuKey = JSON.stringify(data.processes.cpu);
+                if (topCpuKey !== _prevTopCpu) {
+                    _prevTopCpu = topCpuKey;
+                    const topCpuCont = document.getElementById('top-cpu');
+                    topCpuCont.innerHTML = data.processes.cpu.map((p, idx) => `
+                        <div class="list-item" style="display:flex; align-items:center; gap:6px;">
+                            <span style="color: var(--accent-blue); font-weight: 700; flex-shrink: 0; min-width: 1.6rem;">${idx + 1}.</span>
+                            <span class="list-name" style="flex:1; min-width:0;">${p.name}</span>
+                            <span class="list-val" style="color: var(--accent-blue); font-weight: 700; flex-shrink: 0;">${p.val}</span>
+                        </div>
+                    `).join('');
+                }
+
+                // GPU
+                const gUsage = data.gpu.usage || {rcs:0, bcs:0, vcs:0, vecs:0};
+                document.getElementById('gpu-rcs-val').textContent = `${gUsage.rcs.toFixed(1)}%`;
+                document.getElementById('gpu-rcs-bar').style.width = `${Math.min(100, gUsage.rcs)}%`;
+                
+                document.getElementById('gpu-bcs-val').textContent = `${gUsage.bcs.toFixed(1)}%`;
+                document.getElementById('gpu-bcs-bar').style.width = `${Math.min(100, gUsage.bcs)}%`;
+
+                document.getElementById('gpu-vcs-val').textContent = `${gUsage.vcs.toFixed(1)}%`;
+                document.getElementById('gpu-vcs-bar').style.width = `${Math.min(100, gUsage.vcs)}%`;
+
+                document.getElementById('gpu-vecs-val').textContent = `${gUsage.vecs.toFixed(1)}%`;
+                document.getElementById('gpu-vecs-bar').style.width = `${Math.min(100, gUsage.vecs)}%`;
+
+                gpuRcsData.push(gUsage.rcs); gpuRcsData.shift();
+                gpuBcsData.push(gUsage.bcs); gpuBcsData.shift();
+                gpuVcsData.push(gUsage.vcs); gpuVcsData.shift();
+                gpuVecsData.push(gUsage.vecs); gpuVecsData.shift();
+                gpuChart.update();
+
+                // GPU Processes (Numbered)
+                let gProcs = (data.processes && data.processes.gpu) ? data.processes.gpu : [];
+                const topGpuKey = gProcs.map(p => p.name).join(',');
+                if (topGpuKey !== _prevTopGpu) {
+                    _prevTopGpu = topGpuKey;
+                    const topGpuCont = document.getElementById('top-gpu');
+                    if (gProcs && gProcs.length > 0) {
+                        const prevScroll = topGpuCont.scrollTop;
+                        topGpuCont.innerHTML = gProcs.map((p, idx) => `
+                            <div class="list-item" style="display:flex; align-items:center; gap:6px;">
+                                <span style="color: var(--accent-purple); font-weight: 700; flex-shrink: 0; min-width: 1.4rem;">${idx + 1}.</span>
+                                <span class="list-name" style="flex:1; min-width:0;" title="${p.name}">${p.name}</span>
+                                <span class="list-val" style="font-size: 0.65rem; font-weight: 500; flex-shrink: 0; display:flex; gap:6px; align-items:center; justify-content:flex-end;">
+                                    <span style="color: var(--accent-purple);" title="3D / Render">${p.rcs}%</span>
+                                    <span style="color: var(--accent-blue);" title="Blitter / 2D">${p.bcs}%</span>
+                                    <span style="color: var(--accent-cyan);" title="Video Decode">${p.vcs}%</span>
+                                    <span style="color: var(--accent-orange);" title="Video Enhance">${p.vecs}%</span>
+                                </span>
+                            </div>
+                        `).join('');
+                        topGpuCont.scrollTop = prevScroll;
+                        
+                        startScrollAnimation(topGpuCont, true);
+                        topGpuCont.querySelectorAll('.list-name').forEach(el => {
+                            startScrollAnimation(el, false);
+                        });
+                    } else {
+                        topGpuCont.innerHTML = `<div class="list-item" style="justify-content:center; color:var(--text-muted); font-style:italic;">No Active GPU Processes</div>`;
+                    }
+                }
+
+                // RAM & ZRAM & SWAP
+                const ramPct = (data.ram.used / data.ram.total) * 100;
+                document.getElementById('ram-text').innerHTML = `<span style="color:var(--accent-green); font-weight:700;">${formatBytes(data.ram.used)}</span> / ${formatBytes(data.ram.total)}`;
+                document.getElementById('ram-bar').style.width = `${ramPct}%`;
+
+                const zramPct = data.zram.total > 0 ? (data.zram.used / data.zram.total) * 100 : 0;
+                document.getElementById('zram-text').innerHTML = `<span style="color:var(--accent-orange); font-weight:700;">${formatBytes(data.zram.used)}</span> / ${formatBytes(data.zram.total)}`;
+                document.getElementById('zram-bar').style.width = `${zramPct}%`;
+
+                const swapPct = data.swap.total > 0 ? (data.swap.used / data.swap.total) * 100 : 0;
+                document.getElementById('swap-text').innerHTML = `<span style="color:var(--accent-red); font-weight:700;">${formatBytes(data.swap.used)}</span> / ${formatBytes(data.swap.total)}`;
+                document.getElementById('swap-bar').style.width = `${swapPct}%`;
+
+                // Update 3-Line Memory Chart
+                memRamData.push(ramPct); memRamData.shift();
+                memZramData.push(zramPct); memZramData.shift();
+                memSwapData.push(swapPct); memSwapData.shift();
+                memChart.update();
+                
+                // Memory Processes (Numbered)
+                const topMemKey = JSON.stringify(data.processes.mem);
+                if (topMemKey !== _prevTopMem) {
+                    _prevTopMem = topMemKey;
+                    const topMemCont = document.getElementById('top-mem');
+                    topMemCont.innerHTML = data.processes.mem.map((p, idx) => `
+                        <div class="list-item" style="display:flex; align-items:center; gap:6px;">
+                            <span style="color: var(--accent-green); font-weight: 700; flex-shrink: 0; min-width: 1.6rem;">${idx + 1}.</span>
+                            <span class="list-name" style="flex:1; min-width:0;">${p.name}</span>
+                            <span class="list-val" style="color: var(--accent-green); font-weight: 700; flex-shrink: 0;">${p.val}</span>
+                        </div>
+                    `).join('');
+                }
+
+                // Network
+                document.getElementById('net-rx').textContent = formatSpeed(data.network.rx_rate);
+                document.getElementById('net-tx').textContent = formatSpeed(data.network.tx_rate);
+                
+                netRxData.push(data.network.rx_rate); netRxData.shift();
+                netTxData.push(data.network.tx_rate); netTxData.shift();
+                netChart.update();
+
+                // Network Processes (Numbered)
+                const topNetKey = JSON.stringify(data.processes.net);
+                if (topNetKey !== _prevTopNet) {
+                    _prevTopNet = topNetKey;
+                    if (data.processes.net && data.processes.net.length > 0) {
+                        const topNetCont = document.getElementById('top-net');
+                        topNetCont.innerHTML = data.processes.net.map((p, idx) => `
+                            <div class="list-item" style="display:flex; align-items:center; gap:6px;">
+                                <span style="color: var(--accent-cyan); font-weight: 700; flex-shrink: 0; min-width: 1.6rem;">${idx + 1}.</span>
+                                <span class="list-name" style="flex:1; min-width:0;" title="${p.name}">${p.name}</span>
+                                <span class="list-val" style="font-weight: 500; font-size: 0.65rem; flex-shrink: 0; display:flex; gap:6px;">
+                                    <span style="color: var(--accent-cyan); font-weight: 500;">▼ ${p.down}</span>
+                                    <span style="color: var(--accent-blue); font-weight: 500;">▲ ${p.up}</span>
+                                </span>
+                            </div>
+                        `).join('');
+                    } else {
+                        document.getElementById('top-net').innerHTML = `<div class="list-item" style="justify-content:center; color:var(--text-muted); font-style:italic;">No Active Traffic / Listening...</div>`;
+                    }
+                }
+
+                // Multi-Disk Selector & Telemetry Update
+                if (data.disk) {
+                    if (data.disk.disks && data.disk.disks.length > 0) {
+                        updateDiskSelector(data.disk.disks, data.disk);
+                    } else {
+                        document.getElementById('disk-read').textContent = formatSpeed(data.disk.read_rate);
+                        document.getElementById('disk-write').textContent = formatSpeed(data.disk.write_rate);
+                        diskReadData.push(data.disk.read_rate); diskReadData.shift();
+                        diskWriteData.push(data.disk.write_rate); diskWriteData.shift();
+                        diskChart.update();
+                    }
+                }
+
+                // Sensors
+                document.getElementById('temp-val').textContent = `${data.sensors.temp}°C`;
+                document.getElementById('batt-val').textContent = `${data.sensors.battery}%`;
+
+            } catch (err) {
+                console.error("Error:", err);
+            }
+        }
+
+        let selectedDiskId = null;
+        let lastDiskData = null;
+
+        function fetchDiskDetail(devName) {
+            if (!devName) return;
+            const el = document.getElementById('disk-details');
+            if (!el) return;
+            if (!el.textContent || el.textContent.trim() === '' || el.textContent.startsWith('Loading')) {
+                el.textContent = 'Loading details for /dev/' + devName + '...';
+            }
+            fetch('/api/disk-detail?dev=' + encodeURIComponent(devName))
+                .then(r => r.json())
+                .then(d => {
+                    if (d.detail && el) el.textContent = d.detail;
+                })
+                .catch(() => {});
+        }
+
+        function onDiskSelect(val) {
+            selectedDiskId = val;
+            if (val) {
+                localStorage.setItem('rizkyby_selected_disk', val);
+                saveConfig({ selected_disk: val });
+            }
+            if (lastDiskData) {
+                renderSelectedDiskInfo(lastDiskData);
+            }
+            // Fetch per-disk detail for right-click view
+            if (val && lastDiskData && lastDiskData.disks) {
+                const disk = lastDiskData.disks.find(d => d.id === val);
+                if (disk && disk.dev) fetchDiskDetail(disk.dev);
+            }
+        }
+
+        function toggleDiskMenu(e) {
+            if (e) e.stopPropagation();
+            const menu = document.getElementById('custom-disk-options');
+            if (menu) menu.classList.toggle('show');
+        }
+
+        // Color Theme Palettes & Light/Dark Mode Manager
+        const DARK_PALETTES = {
+            cyberpunk: { name: "Neon Cyberpunk", icon: "🎨", blue: "#3b82f6", purple: "#8b5cf6", green: "#10b981", orange: "#f59e0b", cyan: "#06b6d4", red: "#ef4444", bgColor: "#050814", cardBg: "rgba(10, 15, 28, 0.92)", cardHoverBg: "rgba(30, 44, 76, 0.96)", coreBg: "rgba(255, 255, 255, 0.04)", listBg: "rgba(255, 255, 255, 0.04)" },
+            volcanic:  { name: "Volcanic Crimson", icon: "🌋", blue: "#ef4444", purple: "#dc2626", green: "#f97316", orange: "#f59e0b", cyan: "#b91c1c", red: "#7f1d1d", bgColor: "#0c0304", cardBg: "rgba(22, 9, 11, 0.92)", cardHoverBg: "rgba(58, 22, 28, 0.96)", coreBg: "rgba(239, 68, 68, 0.06)", listBg: "rgba(239, 68, 68, 0.06)" },
+            emerald:   { name: "Emerald Forest",  icon: "🌲", blue: "#10b981", purple: "#059669", green: "#34d399", orange: "#a7f3d0", cyan: "#14b8a6", red: "#047857", bgColor: "#030806", cardBg: "rgba(8, 20, 14, 0.92)", cardHoverBg: "rgba(18, 55, 40, 0.96)", coreBg: "rgba(16, 185, 129, 0.06)", listBg: "rgba(16, 185, 129, 0.06)" },
+            sunset:    { name: "Sunset Gold",     icon: "🌅", blue: "#f59e0b", purple: "#f97316", green: "#fbbf24", orange: "#f43f5e", cyan: "#fb7185", red: "#e11d48", bgColor: "#0c0602", cardBg: "rgba(22, 12, 6, 0.92)", cardHoverBg: "rgba(60, 45, 14, 0.96)", coreBg: "rgba(245, 158, 11, 0.06)", listBg: "rgba(245, 158, 11, 0.06)" },
+            amethyst:  { name: "Amethyst Night",  icon: "🔮", blue: "#8b5cf6", purple: "#c084fc", green: "#a855f7", orange: "#ec4899", cyan: "#6366f1", red: "#d946ef", bgColor: "#080410", cardBg: "rgba(16, 8, 26, 0.92)", cardHoverBg: "rgba(48, 24, 72, 0.96)", coreBg: "rgba(139, 92, 246, 0.06)", listBg: "rgba(139, 92, 246, 0.06)" },
+            ocean:     { name: "Ocean Sapphire",  icon: "🌊", blue: "#0ea5e9", purple: "#2563eb", green: "#38bdf8", orange: "#0284c7", cyan: "#06b6d4", red: "#1d4ed8", bgColor: "#020710", cardBg: "rgba(6, 14, 28, 0.92)", cardHoverBg: "rgba(18, 42, 76, 0.96)", coreBg: "rgba(14, 165, 233, 0.06)", listBg: "rgba(14, 165, 233, 0.06)" },
+            sakura:    { name: "Sakura Bloom",    icon: "🌸", blue: "#ec4899", purple: "#f43f5e", green: "#fb7185", orange: "#f472b6", cyan: "#c084fc", red: "#e11d48", bgColor: "#0c0308", cardBg: "rgba(22, 8, 16, 0.92)", cardHoverBg: "rgba(58, 20, 44, 0.96)", coreBg: "rgba(236, 72, 153, 0.06)", listBg: "rgba(236, 72, 153, 0.06)" },
+            lime:      { name: "Electric Lime",   icon: "⚡", blue: "#84cc16", purple: "#a3e635", green: "#65a30d", orange: "#eab308", cyan: "#14b8a6", red: "#4d7c0f", bgColor: "#060a02", cardBg: "rgba(12, 20, 6, 0.92)", cardHoverBg: "rgba(32, 52, 16, 0.96)", coreBg: "rgba(132, 204, 22, 0.06)", listBg: "rgba(132, 204, 22, 0.06)" },
+            glacier:   { name: "Glacier Mint",    icon: "🧊", blue: "#38bdf8", purple: "#818cf8", green: "#22d3ee", orange: "#a5f3fc", cyan: "#06b6d4", red: "#0284c7", bgColor: "#02080c", cardBg: "rgba(6, 16, 24, 0.92)", cardHoverBg: "rgba(18, 44, 64, 0.96)", coreBg: "rgba(56, 189, 248, 0.06)", listBg: "rgba(56, 189, 248, 0.06)" },
+            nebula:    { name: "Cosmic Nebula",   icon: "🌌", blue: "#a855f7", purple: "#e0e7ff", green: "#38bdf8", orange: "#fb7185", cyan: "#06b6d4", red: "#e11d48", bgColor: "#0a030e", cardBg: "rgba(18, 8, 26, 0.92)", cardHoverBg: "rgba(48, 20, 70, 0.96)", coreBg: "rgba(168, 85, 247, 0.06)", listBg: "rgba(168, 85, 247, 0.06)" },
+            fox:       { name: "Cyber Fox",       icon: "🦊", blue: "#ff6b00", purple: "#8a2be2", green: "#ffd700", orange: "#ff2a00", cyan: "#00ffff", red: "#dc143c", bgColor: "#0c0502", cardBg: "rgba(22, 10, 6, 0.92)", cardHoverBg: "rgba(56, 24, 14, 0.96)", coreBg: "rgba(255, 107, 0, 0.06)", listBg: "rgba(255, 107, 0, 0.06)" },
+            monochrome:{ name: "Midnight Silver", icon: "🖤", blue: "#cbd5e1", purple: "#94a3b8", green: "#e2e8f0", orange: "#64748b", cyan: "#f8fafc", red: "#475569", bgColor: "#06070a", cardBg: "rgba(14, 16, 22, 0.92)", cardHoverBg: "rgba(35, 40, 55, 0.96)", coreBg: "rgba(203, 213, 225, 0.06)", listBg: "rgba(203, 213, 225, 0.06)" }
+        };
+
+        const LIGHT_PALETTES = {
+            breeze:    { name: "Pastel Breeze",    icon: "🩵", blue: "#0284c7", purple: "#7c3aed", green: "#059669", orange: "#ea580c", cyan: "#0891b2", red: "#e11d48", bgColor: "#cbd5e1", cardBg: "rgba(241, 245, 249, 0.94)", cardHoverBg: "rgba(186, 208, 228, 0.98)", coreBg: "rgba(0, 0, 0, 0.05)", listBg: "rgba(0, 0, 0, 0.04)" },
+            strawberry:{ name: "Strawberry Cream",icon: "🍓", blue: "#e11d48", purple: "#db2777", green: "#10b981", orange: "#f97316", cyan: "#06b6d4", red: "#9f1239", bgColor: "#e8d5d8", cardBg: "rgba(249, 238, 240, 0.94)", cardHoverBg: "rgba(224, 184, 192, 0.98)", coreBg: "rgba(225, 29, 72, 0.06)", listBg: "rgba(225, 29, 72, 0.05)" },
+            matcha:    { name: "Matcha Latte",    icon: "🍵", blue: "#166534", purple: "#15803d", green: "#047857", orange: "#854d0e", cyan: "#0f766e", red: "#991b1b", bgColor: "#cad8ce", cardBg: "rgba(236, 244, 238, 0.94)", cardHoverBg: "rgba(182, 208, 190, 0.98)", coreBg: "rgba(22, 101, 52, 0.06)", listBg: "rgba(22, 101, 52, 0.05)" },
+            citrus:    { name: "Citrus Sunshine", icon: "🍊", blue: "#ea580c", purple: "#ca8a04", green: "#16a34a", orange: "#d97706", cyan: "#0284c7", red: "#dc2626", bgColor: "#ded8c8", cardBg: "rgba(247, 243, 232, 0.94)", cardHoverBg: "rgba(215, 200, 168, 0.98)", coreBg: "rgba(234, 88, 12, 0.06)", listBg: "rgba(234, 88, 12, 0.05)" },
+            lavender:  { name: "Lavender Bliss",   icon: "💜", blue: "#7e22ce", purple: "#6b21a8", green: "#0d9488", orange: "#c026d3", cyan: "#4338ca", red: "#be123c", bgColor: "#dcd2e8", cardBg: "rgba(244, 238, 250, 0.94)", cardHoverBg: "rgba(202, 180, 222, 0.98)", coreBg: "rgba(126, 34, 206, 0.06)", listBg: "rgba(126, 34, 206, 0.05)" },
+            arctic:    { name: "Arctic Crystal",   icon: "💎", blue: "#0891b2", purple: "#0369a1", green: "#0f766e", orange: "#d97706", cyan: "#0284c7", red: "#be123c", bgColor: "#c8dcdb", cardBg: "rgba(234, 246, 246, 0.94)", cardHoverBg: "rgba(175, 212, 212, 0.98)", coreBg: "rgba(8, 145, 178, 0.06)", listBg: "rgba(8, 145, 178, 0.05)" },
+            espresso:  { name: "Espresso Roast",   icon: "☕", blue: "#78350f", purple: "#92400e", green: "#15803d", orange: "#b45309", cyan: "#0369a1", red: "#b91c1c", bgColor: "#d8cdc5", cardBg: "rgba(246, 239, 234, 0.94)", cardHoverBg: "rgba(208, 182, 164, 0.98)", coreBg: "rgba(120, 53, 15, 0.06)", listBg: "rgba(120, 53, 15, 0.05)" },
+            cotton:    { name: "Cotton Candy",    icon: "🍬", blue: "#db2777", purple: "#7c3aed", green: "#059669", orange: "#ea580c", cyan: "#0284c7", red: "#e11d48", bgColor: "#e8d2e5", cardBg: "rgba(248, 236, 246, 0.94)", cardHoverBg: "rgba(210, 175, 204, 0.98)", coreBg: "rgba(219, 39, 119, 0.06)", listBg: "rgba(219, 39, 119, 0.05)" },
+            sage:      { name: "Nordic Sage",     icon: "🌿", blue: "#0f766e", purple: "#334155", green: "#166534", orange: "#d97706", cyan: "#0369a1", red: "#991b1b", bgColor: "#cfd6d4", cardBg: "rgba(238, 243, 241, 0.94)", cardHoverBg: "rgba(182, 202, 194, 0.98)", coreBg: "rgba(15, 118, 110, 0.06)", listBg: "rgba(15, 118, 110, 0.05)" },
+            royal:     { name: "Royal Gold",      icon: "👑", blue: "#b45309", purple: "#1e3a8a", green: "#047857", orange: "#854d0e", cyan: "#0f766e", red: "#9f1239", bgColor: "#dedbc6", cardBg: "rgba(248, 245, 230, 0.94)", cardHoverBg: "rgba(206, 194, 150, 0.98)", coreBg: "rgba(180, 83, 9, 0.06)", listBg: "rgba(180, 83, 9, 0.05)" }
+        };
+
+        let currentPalette = 'cyberpunk';
+        let currentThemeMode = 'dark';
+
+        function getActivePalettes() {
+            return currentThemeMode === 'light' ? LIGHT_PALETTES : DARK_PALETTES;
+        }
+
+        function initColorSelector() {
+            const menu = document.getElementById('custom-color-options');
+            if (!menu) return;
+            const palettes = getActivePalettes();
+            menu.innerHTML = Object.keys(palettes).map(key => {
+                const pal = palettes[key];
+                return `
+                    <div class="custom-color-option-item ${key === currentPalette ? 'selected' : ''}" onclick="selectCustomColor('${key}', event)">
+                        <span>${pal.icon}</span> ${pal.name}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function toggleColorMenu(e) {
+            if (e && typeof e.stopPropagation === 'function') {
+                e.stopPropagation();
+            }
+            const menu = document.getElementById('custom-color-options');
+            const box = document.getElementById('custom-color-select');
+            if (!menu || !box) return;
+
+            const isShowing = menu.classList.contains('show');
+            if (isShowing) {
+                menu.classList.remove('show');
+            } else {
+                initColorSelector();
+                const rect = box.getBoundingClientRect();
+                menu.style.position = 'fixed';
+                menu.style.top = (rect.bottom + 6) + 'px';
+                menu.style.left = rect.left + 'px';
+                menu.style.zIndex = '999999';
+                menu.classList.add('show');
+            }
+        }
+
+        function selectCustomColor(key, e) {
+            if (e && typeof e.stopPropagation === 'function') {
+                e.stopPropagation();
+            }
+            const menu = document.getElementById('custom-color-options');
+            if (menu) menu.classList.remove('show');
+            setPalette(key);
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const windowId = urlParams.get('win') || '1';
+
+        async function saveConfig(obj) {
+            try {
+                await fetch('/api/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ window_id: windowId, settings: obj })
+                });
+            } catch(e) {}
+        }
+
+        function setPalette(key) {
+            const palettes = getActivePalettes();
+            let targetKey = key;
+            if (!palettes[targetKey]) {
+                targetKey = Object.keys(palettes)[0];
+            }
+            currentPalette = targetKey;
+            if (currentThemeMode === 'light') {
+                localStorage.setItem(`rizkyby_${windowId}_palette_light`, targetKey);
+                saveConfig({ mode: currentThemeMode, palette_light: targetKey });
+            } else {
+                localStorage.setItem(`rizkyby_${windowId}_palette_dark`, targetKey);
+                saveConfig({ mode: currentThemeMode, palette_dark: targetKey });
+            }
+            const pal = palettes[targetKey];
+            const root = document.documentElement;
+
+            root.style.setProperty('--accent-blue', pal.blue);
+            root.style.setProperty('--accent-purple', pal.purple);
+            root.style.setProperty('--accent-green', pal.green);
+            root.style.setProperty('--accent-orange', pal.orange);
+            root.style.setProperty('--accent-cyan', pal.cyan);
+            root.style.setProperty('--accent-red', pal.red);
+
+            if (pal.bgColor) root.style.setProperty('--bg-color', pal.bgColor);
+            if (pal.cardBg) root.style.setProperty('--card-bg', pal.cardBg);
+            if (pal.cardHoverBg) root.style.setProperty('--card-hover-bg', pal.cardHoverBg);
+            if (pal.coreBg) root.style.setProperty('--core-bg', pal.coreBg);
+            if (pal.listBg) root.style.setProperty('--list-bg', pal.listBg);
+            if (pal.cardBg) root.style.setProperty('--glass-bg', pal.cardBg);
+
+            const glowColor = pal.blue || pal.purple || '#3b82f6';
+            const shadowGlow = currentThemeMode === 'light'
+                ? `0 8px 30px rgba(0, 0, 0, 0.08), 0 0 15px ${glowColor}20`
+                : `0 10px 35px rgba(0, 0, 0, 0.5), 0 0 25px ${glowColor}2e`;
+
+            const shadowHoverGlow = currentThemeMode === 'light'
+                ? `0 12px 40px rgba(0, 0, 0, 0.15), 0 0 25px ${glowColor}35`
+                : `0 15px 45px rgba(0, 0, 0, 0.7), 0 0 35px ${glowColor}48`;
+
+            root.style.setProperty('--card-shadow', shadowGlow);
+            root.style.setProperty('--card-shadow-hover', shadowHoverGlow);
+
+            // Dynamic Ambient Radial Gradient Background with Theme Glow Intensity!
+            const bgAlpha = currentThemeMode === 'light' ? '22' : '33';
+            document.body.style.backgroundImage = `
+                radial-gradient(at 0% 0%, ${pal.blue}${bgAlpha} 0px, transparent 60%),
+                radial-gradient(at 100% 0%, ${pal.purple}${bgAlpha} 0px, transparent 60%),
+                radial-gradient(at 100% 100%, ${pal.green}${bgAlpha} 0px, transparent 60%),
+                radial-gradient(at 0% 100%, ${pal.orange}${bgAlpha} 0px, transparent 60%)
+            `;
+
+            const labelText = document.getElementById('color-label-text');
+            if (labelText) labelText.textContent = `${pal.icon} ${pal.name}`;
+
+            initColorSelector();
+
+            // Dynamic Chart dataset colors update
+            if (cpuChart && cpuChart.data && cpuChart.data.datasets[0]) {
+                cpuChart.data.datasets[0].borderColor = pal.blue;
+                cpuChart.data.datasets[0].backgroundColor = pal.blue + '22';
+                cpuChart.update();
+            }
+            if (gpuChart && gpuChart.data && gpuChart.data.datasets.length >= 4) {
+                gpuChart.data.datasets[0].borderColor = pal.purple;
+                gpuChart.data.datasets[1].borderColor = pal.blue;
+                gpuChart.data.datasets[2].borderColor = pal.cyan;
+                gpuChart.data.datasets[3].borderColor = pal.orange;
+                gpuChart.update();
+            }
+            if (memChart && memChart.data && memChart.data.datasets.length >= 3) {
+                memChart.data.datasets[0].borderColor = pal.green;
+                memChart.data.datasets[1].borderColor = pal.orange;
+                memChart.data.datasets[2].borderColor = pal.red;
+                memChart.update();
+            }
+            if (netChart && netChart.data && netChart.data.datasets.length >= 2) {
+                netChart.data.datasets[0].borderColor = pal.cyan;
+                netChart.data.datasets[1].borderColor = pal.blue;
+                netChart.update();
+            }
+            if (diskChart && diskChart.data && diskChart.data.datasets.length >= 2) {
+                diskChart.data.datasets[0].borderColor = pal.orange;
+                diskChart.data.datasets[1].borderColor = pal.red;
+                diskChart.update();
+            }
+        }
+
+        function setThemeMode(mode, targetPaletteKey) {
+            currentThemeMode = mode;
+            localStorage.setItem(`rizkyby_${windowId}_mode`, mode);
+
+            let palKey = targetPaletteKey;
+            if (!palKey) {
+                if (mode === 'light') {
+                    palKey = localStorage.getItem(`rizkyby_${windowId}_palette_light`) || 'breeze';
+                } else {
+                    palKey = localStorage.getItem(`rizkyby_${windowId}_palette_dark`) || 'cyberpunk';
+                }
+            }
+
+            const darkPal = mode === 'dark' ? palKey : (localStorage.getItem(`rizkyby_${windowId}_palette_dark`) || 'cyberpunk');
+            const lightPal = mode === 'light' ? palKey : (localStorage.getItem(`rizkyby_${windowId}_palette_light`) || 'breeze');
+
+            saveConfig({
+                mode: mode,
+                palette_dark: darkPal,
+                palette_light: lightPal
+            });
+
+            const btnDark = document.getElementById('btn-mode-dark');
+            const btnLight = document.getElementById('btn-mode-light');
+
+            const root = document.documentElement;
+            if (mode === 'light') {
+                if (btnDark) btnDark.classList.remove('active');
+                if (btnLight) btnLight.classList.add('active');
+                root.style.setProperty('--text-main', '#0f172a');
+                root.style.setProperty('--text-muted', '#475569');
+                root.style.setProperty('--glass-border', 'rgba(0, 0, 0, 0.15)');
+                root.style.setProperty('--header-line', 'rgba(0, 0, 0, 0.1)');
+            } else {
+                if (btnLight) btnLight.classList.remove('active');
+                if (btnDark) btnDark.classList.add('active');
+                root.style.setProperty('--text-main', '#f8fafc');
+                root.style.setProperty('--text-muted', '#94a3b8');
+                root.style.setProperty('--glass-border', 'rgba(255, 255, 255, 0.12)');
+                root.style.setProperty('--header-line', 'rgba(255, 255, 255, 0.08)');
+            }
+
+            // Update Chart grid lines and scale ticks for legibility in mode!
+            const gridColor = mode === 'light' ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.05)';
+            const tickColor = mode === 'light' ? '#475569' : '#94a3b8';
+            [cpuChart, gpuChart, memChart, netChart, diskChart].forEach(chart => {
+                if (chart && chart.options && chart.options.scales && chart.options.scales.y) {
+                    chart.options.scales.y.grid.color = gridColor;
+                    chart.options.scales.y.ticks.color = tickColor;
+                    chart.update();
+                }
+            });
+
+            setPalette(palKey);
+        }
+
+        document.addEventListener('click', function(e) {
+            const menuDisk = document.getElementById('custom-disk-options');
+            if (menuDisk && menuDisk.classList.contains('show')) {
+                if (!e.target.closest('#custom-disk-select')) {
+                    menuDisk.classList.remove('show');
+                }
+            }
+            const menuColor = document.getElementById('custom-color-options');
+            if (menuColor && menuColor.classList.contains('show')) {
+                if (!e.target.closest('#custom-color-select')) {
+                    menuColor.classList.remove('show');
+                }
+            }
+        });
+
+        function selectCustomDisk(id) {
+            const menu = document.getElementById('custom-disk-options');
+            if (menu) menu.classList.remove('show');
+            onDiskSelect(id);
+        }
+
+        function updateDiskSelector(disksList, diskData) {
+            lastDiskData = diskData;
+            const select = document.getElementById('disk-select');
+            const menu = document.getElementById('custom-disk-options');
+            if (!select) return;
+            
+            const existingIds = Array.from(select.options).map(o => o.value).join(',');
+            const newIds = disksList.map(d => d.id).join(',');
+            
+            if (existingIds !== newIds) {
+                select.innerHTML = disksList.map(d => `<option value="${d.id}">${d.label}${d.is_root ? ' [OS Root]' : ''}</option>`).join('');
+                if (menu) {
+                    menu.innerHTML = disksList.map(d => `
+                        <div class="custom-disk-option-item ${d.id === selectedDiskId ? 'selected' : ''}" onclick="selectCustomDisk('${d.id}')">
+                            ${d.icon} ${d.model} (${d.size})${d.is_root ? ' [OS Root]' : ''}
+                        </div>
+                    `).join('');
+                }
+            }
+            
+            const savedDisk = localStorage.getItem('rizkyby_selected_disk');
+            if (!selectedDiskId && savedDisk && disksList.some(d => d.id === savedDisk)) {
+                selectedDiskId = savedDisk;
+            }
+            if (!selectedDiskId || !disksList.some(d => d.id === selectedDiskId)) {
+                selectedDiskId = disksList[0].id;
+            }
+            select.value = selectedDiskId;
+
+            renderSelectedDiskInfo(diskData);
+        }
+
+        function renderSelectedDiskInfo(diskData) {
+            const disksList = diskData.disks || [];
+            const disk = disksList.find(d => d.id === selectedDiskId) || disksList[0];
+            if (!disk) return;
+
+            // Update custom auto-scrolling selector label text
+            const labelTextEl = document.getElementById('disk-label-text');
+            if (labelTextEl) {
+                const fullText = `${disk.icon} ${disk.model} (${disk.size})${disk.is_root ? ' [OS Root]' : ''}`;
+                if (labelTextEl.textContent !== fullText) {
+                    labelTextEl.textContent = fullText;
+                    const scrollContainer = document.getElementById('custom-disk-label');
+                    if (scrollContainer) {
+                        scrollContainer.dataset.scrolling = "";
+                        scrollContainer.scrollLeft = 0;
+                        setTimeout(() => applyAutoScroll(), 50);
+                    }
+                }
+            }
+
+            // Update menu items selection state
+            const menu = document.getElementById('custom-disk-options');
+            if (menu) {
+                Array.from(menu.children).forEach(child => {
+                    if (child.getAttribute('onclick') && child.getAttribute('onclick').includes(`'${disk.id}'`)) {
+                        child.classList.add('selected');
+                    } else {
+                        child.classList.remove('selected');
+                    }
+                });
+            }
+
+            // R/W Speed Rate for selected disk
+            document.getElementById('disk-read').textContent = formatSpeed(disk.read_rate);
+            document.getElementById('disk-write').textContent = formatSpeed(disk.write_rate);
+            
+            diskReadData.push(disk.read_rate); diskReadData.shift();
+            diskWriteData.push(disk.write_rate); diskWriteData.shift();
+            diskChart.update();
+
+            // Right column dynamic telemetry
+            const diskTitleEl = document.getElementById('selected-disk-name');
+            if (diskTitleEl) {
+                diskTitleEl.innerHTML = `${disk.icon} ${disk.name} ${disk.is_root ? '<span style="color:var(--accent-green); font-size:0.7em;">[OS Linux]</span>' : ''}`;
+            }
+            
+            // Dynamic Row Labels tailored to Drive Category
+            if (disk.is_ssd) {
+                document.getElementById('label-stat-1').textContent = 'TBW Used (Total Writes)';
+                document.getElementById('val-stat-1').textContent = disk.tbw_str;
+                
+                document.getElementById('label-stat-2').textContent = 'TBW Remaining Life';
+                document.getElementById('val-stat-2').textContent = disk.remaining_str || 'N/A';
+            } else if (disk.is_hdd) {
+                document.getElementById('label-stat-1').textContent = 'Platter & Spindle Speed';
+                document.getElementById('val-stat-1').textContent = disk.tbw_str;
+                
+                document.getElementById('label-stat-2').textContent = 'Transport Interface';
+                document.getElementById('val-stat-2').textContent = disk.transport.toUpperCase() + ' Bus Interface';
+            } else {
+                // USB Flash Drive / SD Card
+                document.getElementById('label-stat-1').textContent = 'Flash Storage Protocol';
+                document.getElementById('val-stat-1').textContent = disk.tbw_str;
+                
+                document.getElementById('label-stat-2').textContent = 'Removable Media Status';
+                document.getElementById('val-stat-2').textContent = 'Hot-Pluggable USB Mass Storage';
+            }
+            
+            // Row 3: Drive Type & Transport
+            document.getElementById('label-stat-3').textContent = 'Drive Type & Transport';
+            document.getElementById('val-stat-3').textContent = `${disk.type} (${disk.transport.toUpperCase()})`;
+            
+            // Row 4: SMART Health / Temp
+            document.getElementById('label-stat-4').textContent = 'SMART Health / Temp';
+            document.getElementById('val-stat-4').textContent = `${disk.health_str} | ${disk.temp_str}`;
+            
+            // Build rich English hover tooltip for Disk Card
+            let tooltipLines = `<strong>💽 Connected Storage Hierarchy (${disksList.length} Disks):</strong><br>`;
+            disksList.forEach((d, idx) => {
+                const isSelected = (d.id === disk.id);
+                const tag = isSelected ? " <span style='color:var(--accent-orange); font-weight:bold;'>➔ ACTIVE</span>" : "";
+                const osTag = d.is_root ? " [OS Root]" : "";
+                tooltipLines += `${idx+1}. ${d.icon} <strong>${d.model}</strong> (${d.size})${osTag}${tag}<br>&nbsp;&nbsp;&nbsp;&nbsp;Type: ${d.type} | ${d.tbw_str}<br>`;
+            });
+            window.hardwareTooltips.ssd = tooltipLines;
+
+            // Update RAW detail view instantly for the active disk with pure monospaced text
+            const detailsEl = document.getElementById('disk-details');
+            if (detailsEl && disk && disk.detail_text) {
+                detailsEl.textContent = disk.detail_text;
+            }
+        }
+
+        // Enable Mouse Wheel scrolling on disk select dropdown
+        setTimeout(() => {
+            const diskSelEl = document.getElementById('disk-select');
+            if (diskSelEl) {
+                diskSelEl.addEventListener('wheel', (e) => {
+                    e.preventDefault();
+                    if (e.deltaY > 0 && diskSelEl.selectedIndex < diskSelEl.options.length - 1) {
+                        diskSelEl.selectedIndex++;
+                        onDiskSelect(diskSelEl.value);
+                    } else if (e.deltaY < 0 && diskSelEl.selectedIndex > 0) {
+                        diskSelEl.selectedIndex--;
+                        onDiskSelect(diskSelEl.value);
+                    }
+                }, { passive: false });
+            }
+        }, 500);
+
+        setInterval(fetchStats, 1000);
+        fetchStats();
+    
+        // --- AUTO-SCROLL LOGIC ---
+        function applyAutoScroll() {
+            const easeInOutCubic = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+            const inverseEaseInOutCubic = r => r <= 0.5 ? Math.cbrt(r / 4) : 1 - Math.cbrt((1 - r) * 2) / 2;
+            
+            function calcDuration(max, isVert) {
+                if (isVert) {
+                    return Math.max(5000, Math.min(60000, 4000 + max * 30));
+                } else {
+                    // Crisp, smooth, clearly visible horizontal auto-scroll speed!
+                    return Math.max(1500, Math.min(12000, 1000 + max * 40));
+                }
+            }
+            
+            function startScrollAnimation(el, isVertical) {
+                if (el.dataset.scrolling === "true") return;
+                let scrollMax = isVertical ? (el.scrollHeight - el.clientHeight) : (el.scrollWidth - el.clientWidth);
+                if (scrollMax <= 0) return;
+                
+                let isRightAligned = el.classList.contains('sensors-badge') || el.classList.contains('sensors-badge-wrapper');
+                if (isRightAligned && !el._hasInitializedScroll) {
+                    el.scrollLeft = scrollMax;
+                    el._hasInitializedScroll = true;
+                }
+                el.dataset.scrolling = "true";
+                let startTime = performance.now();
+                let paused = false;
+                let direction = 1;
+                let idleTimer = null;
+                let duration = calcDuration(scrollMax, isVertical);
+                
+                function resumeAutoScroll() {
+                    paused = false;
+                    el._manualScrollActive = false;
+                    scrollMax = isVertical ? (el.scrollHeight - el.clientHeight) : (el.scrollWidth - el.clientWidth);
+                    if (scrollMax > 0) {
+                        duration = calcDuration(scrollMax, isVertical);
+                        let currentPos = isVertical ? el.scrollTop : el.scrollLeft;
+                        let ratio = Math.max(0, Math.min(1, currentPos / scrollMax));
+                        let effectiveRatio = isRightAligned ? (1 - ratio) : ratio;
+                        let linearRatio = inverseEaseInOutCubic(effectiveRatio);
+                        let cycle = direction === 1 ? linearRatio : (2 - linearRatio);
+                        startTime = performance.now() - (cycle * duration);
+                    } else {
+                        startTime = performance.now();
+                    }
+                }
+                
+                function triggerManualScroll(e) {
+                    if (e && e.target && e.target.closest('#disk-select, .disk-select-dropdown, #custom-disk-select, #custom-disk-options, .custom-disk-options-menu, #custom-color-select, .custom-color-options-menu')) {
+                        return;
+                    }
+                    paused = true;
+                    el._manualScrollActive = true;
+                    if (e && (e.deltaY || e.deltaX)) {
+                        let dy = e.deltaY ? e.deltaY * 0.45 : 0;
+                        let dx = e.deltaX ? e.deltaX * 0.45 : 0;
+                        
+                        if (isVertical) {
+                            el.scrollTop += dy;
+                        } else {
+                            el.scrollLeft += (dx || dy);
+                        }
+                    }
+                    if (idleTimer) clearTimeout(idleTimer);
+                    idleTimer = setTimeout(resumeAutoScroll, 5000);
+                }
+
+                function onEnter() {
+                    paused = true;
+                }
+                
+                function onLeave() {
+                    if (idleTimer) clearTimeout(idleTimer);
+                    resumeAutoScroll();
+                }
+                
+                el.addEventListener('wheel', triggerManualScroll, { passive: true });
+                el.addEventListener('touchmove', triggerManualScroll, { passive: true });
+                el.addEventListener('mouseenter', onEnter);
+                el.addEventListener('mouseleave', onLeave);
+                
+                function animate(currentTime) {
+                    if (!el.isConnected) {
+                        el.dataset.scrolling = "";
+                        if (idleTimer) clearTimeout(idleTimer);
+                        el.removeEventListener('wheel', triggerManualScroll);
+                        el.removeEventListener('touchmove', triggerManualScroll);
+                        el.removeEventListener('mouseenter', onEnter);
+                        el.removeEventListener('mouseleave', onLeave);
+                        return;
+                    }
+                    
+                    scrollMax = isVertical ? (el.scrollHeight - el.clientHeight) : (el.scrollWidth - el.clientWidth);
+                    if (scrollMax <= 0) {
+                        el.dataset.scrolling = "";
+                        if (idleTimer) clearTimeout(idleTimer);
+                        el.removeEventListener('wheel', triggerManualScroll);
+                        el.removeEventListener('touchmove', triggerManualScroll);
+                        el.removeEventListener('mouseenter', onEnter);
+                        el.removeEventListener('mouseleave', onLeave);
+                        return; 
+                    }
+                    
+                    if (!paused) {
+                        duration = calcDuration(scrollMax, isVertical);
+                        let elapsed = currentTime - startTime;
+                        let cycle = (elapsed / duration) % 2;
+                        direction = cycle <= 1 ? 1 : -1;
+                        let linearRatio = cycle <= 1 ? cycle : (2 - cycle);
+                        let easedRatio = easeInOutCubic(linearRatio);
+                        let pos = isRightAligned 
+                            ? (1 - easedRatio) * scrollMax 
+                            : easedRatio * scrollMax;
+                        
+                        if (isVertical) {
+                            el.scrollTop = pos;
+                        } else {
+                            el.scrollLeft = pos;
+                        }
+                    }
+                    
+                    requestAnimationFrame(animate);
+                }
+                requestAnimationFrame(animate);
+            }
+
+            document.querySelectorAll('.list-name, .metric-header:not(.no-autoscroll), .metric-value:not(.no-autoscroll), .auto-scroll-x, h1, h2, .sensor-item, .disk-selector-wrapper').forEach(el => startScrollAnimation(el, false));
+            document.querySelectorAll('.card-content, .list-container, .cores-grid, .cores-wrapper, #cpu-cores-wrapper, .card-inner-details').forEach(el => startScrollAnimation(el, true));
+        }
+        
+        setInterval(applyAutoScroll, 1000);
+
+        // GLOBAL wheel interceptor for .card-inner-details
+        document.addEventListener('wheel', function(e) {
+            if (e.ctrlKey) return;
+            
+            let target = e.target;
+            let detailsEl = null;
+            while (target && target !== document) {
+                if (target.classList && target.classList.contains('card-inner-details')) {
+                    detailsEl = target;
+                    break;
+                }
+                if (target.classList && target.classList.contains('card') && target.classList.contains('show-details')) {
+                    detailsEl = target.querySelector('.card-inner-details');
+                    break;
+                }
+                target = target.parentElement;
+            }
+            
+            if (detailsEl && detailsEl.offsetParent !== null) {
+                let dy = e.deltaY ? e.deltaY * 0.45 : 0;
+                detailsEl.scrollTop += dy;
+                
+                detailsEl._manualScrollActive = true;
+                if (detailsEl._manualIdleTimer) clearTimeout(detailsEl._manualIdleTimer);
+                detailsEl._manualIdleTimer = setTimeout(() => {
+                    detailsEl._manualScrollActive = false;
+                }, 5000);
+            }
+        }, { passive: true });
+
+</script>
+
+        <script>
+
+        function showCardToast(targetEl, msg) {
+            let toast = document.getElementById('floating-toast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'floating-toast';
+                toast.className = 'card-toast';
+                document.body.appendChild(toast);
+            }
+            
+            // Set dynamic accent color from current palette
+            const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-blue').trim();
+            if (accentColor) {
+                toast.style.backgroundColor = accentColor;
+            }
+            
+            // Position toast in center of hover popup (globalTooltip) if visible, or target element
+            let rect;
+            if (globalTooltip && (globalTooltip.style.opacity === '1' || parseFloat(globalTooltip.style.opacity) > 0)) {
+                rect = globalTooltip.getBoundingClientRect();
+            } else if (targetEl && targetEl.getBoundingClientRect) {
+                rect = targetEl.getBoundingClientRect();
+            } else {
+                rect = { left: window.innerWidth / 2, top: window.innerHeight / 2, width: 0, height: 0 };
+            }
+            
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            
+            toast.style.left = centerX + 'px';
+            toast.style.top = centerY + 'px';
+            
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 2000);
+        }
+
+        async function copyText(targetEl, text, customToastMsg) {
+            const toastMsg = customToastMsg || "Copied Data to Clipboard!";
+            // First try sending it to backend (Python) for robust multi-DE xclip/wl-copy/xsel
+            try {
+                const res = await fetch('/api/copy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+                    body: text
+                });
+                if (res.ok) {
+                    showCardToast(targetEl, toastMsg);
+                    return;
+                }
+            } catch(e) {
+                console.error("Backend copy failed, trying frontend...");
+            }
+            
+            // Fallback to JS APIs
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => showCardToast(targetEl, toastMsg));
+            } else {
+                const ta = document.createElement("textarea");
+                ta.value = text;
+                document.body.appendChild(ta);
+                ta.select();
+                try {
+                    document.execCommand("copy");
+                    showCardToast(targetEl, toastMsg);
+                } catch (e) {
+                    showCardToast(targetEl, "Failed to copy");
+                }
+                document.body.removeChild(ta);
+            }
+        }
+
+        function saveDetailsState() {
+            const activeDetails = [];
+            document.querySelectorAll('.card.show-details').forEach(card => {
+                const cardClass = Array.from(card.classList).find(c => c.startsWith('card-'));
+                if (cardClass) activeDetails.push(cardClass);
+            });
+            localStorage.setItem('rizkyby_details', activeDetails.join(','));
+            saveConfig({ details: activeDetails });
+        }
+
+        async function duplicateWindow() {
+            try {
+                await fetch('/api/duplicate', { method: 'POST', body: '{}' });
+            } catch(e) {}
+        }
+
+        async function quitApp() {
+            saveDetailsState();
+            try {
+                await fetch('/api/quit', { method: 'POST', body: '{}' });
+            } catch(e) {}
+        }
+
+        async function exitWindow() {
+            saveDetailsState();
+            try {
+                await fetch('/api/close_window?win=' + encodeURIComponent(windowId), { method: 'POST' });
+            } catch(e) {}
+        }
+
+        async function toggleAlwaysOnTop() {
+            try {
+                const res = await fetch('/api/on_top?win=' + encodeURIComponent(windowId), { method: 'POST' });
+                if (res.ok) {
+                    const btn = document.getElementById('btn-app-duplicate');
+                    showCardToast(btn, "Toggled Always on Top!");
+                }
+            } catch(e) {}
+        }
+
+        // Global Middle-Click Copy to Clipboard Handler (Hover Tooltip Popup & Widget Cards)
+        document.addEventListener('auxclick', function(e) {
+            if (e.button !== 1) return; // Middle click (wheel click) only
+            
+            // Check if globalTooltip hover popup is currently active / visible
+            const isTooltipActive = globalTooltip && (globalTooltip.style.opacity === '1' || parseFloat(globalTooltip.style.opacity) > 0);
+            
+            if (isTooltipActive) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = globalTooltip.innerHTML;
+                const tooltipText = tempDiv.innerText || tempDiv.textContent;
+                
+                if (tooltipText && tooltipText.trim()) {
+                    copyText(globalTooltip, tooltipText.trim(), "Copied Tooltip to Clipboard!");
+                }
+                return;
+            }
+
+            // Check if middle-clicked on any element with data-tooltip
+            const tooltipEl = e.target.closest('[data-tooltip]');
+            if (tooltipEl) {
+                const key = tooltipEl.getAttribute('data-tooltip');
+                const htmlContent = window.hardwareTooltips ? window.hardwareTooltips[key] : null;
+                if (htmlContent) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = htmlContent;
+                    const tooltipText = tempDiv.innerText || tempDiv.textContent;
+                    if (tooltipText && tooltipText.trim()) {
+                        copyText(tooltipEl, tooltipText.trim(), "Copied Tooltip to Clipboard!");
+                    }
+                    return;
+                }
+            }
+            
+            // Otherwise check if middle-clicked inside a hardware card (.card)
+            const card = e.target.closest('.card');
+            if (card) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                let textToCopy = "";
+                const detailsEl = card.querySelector('.card-inner-details');
+                if (card.classList.contains('show-details') && detailsEl && detailsEl.textContent) {
+                    textToCopy = detailsEl.textContent;
+                } else {
+                    textToCopy = card.innerText || card.textContent;
+                }
+                
+                if (textToCopy && textToCopy.trim()) {
+                    copyText(card, textToCopy.trim(), "Copied Data to Clipboard!");
+                }
+            }
+        });
+
+        // Zoom functionality
+        let currentZoom = 16;
+        document.addEventListener('wheel', function(e) {
+            if (e.ctrlKey) {
+                e.preventDefault();
+                if (e.deltaY < 0) {
+                    currentZoom += 1;
+                } else {
+                    currentZoom -= 1;
+                }
+                currentZoom = Math.max(8, Math.min(currentZoom, 32));
+                document.documentElement.style.fontSize = currentZoom + 'px';
+                localStorage.setItem(`rizkyby_${windowId}_font_size`, currentZoom);
+                saveConfig({ font_size: currentZoom });
+            }
+        }, { passive: false });
+    
+        function closeCardDetails(btn) {
+            const card = btn.closest('.card');
+            if (card) {
+                card.classList.remove('show-details');
+                saveDetailsState();
+            }
+        }
+
+        // Keyboard Shortcuts Manager
+        document.addEventListener('keydown', (e) => {
+            // Ctrl + Shift + A: Toggle Keep Above Other (Pin Window)
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'a') {
+                e.preventDefault();
+                toggleAlwaysOnTop();
+                return;
+            }
+            // Ctrl + Q: Quit All & Save Layout
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'q') {
+                e.preventDefault();
+                quitApp();
+                return;
+            }
+            // Alt + Q: Exit Current Window
+            if (e.altKey && e.key.toLowerCase() === 'q') {
+                e.preventDefault();
+                exitWindow();
+                return;
+            }
+            // Ctrl + N: Duplicate Window
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'n') {
+                e.preventDefault();
+                duplicateWindow();
+                return;
+            }
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.card.show-details').forEach(c => c.classList.remove('show-details'));
+                saveDetailsState();
+            }
+        });
+
+        // Fullscreen & Right-Click Details Logic
+        const overlay = document.getElementById('fs-overlay');
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('contextmenu', (e) => {
+                if (e.target && e.target.closest('.disk-selector-wrapper, #disk-select, .disk-select-dropdown, #custom-disk-select, #custom-color-select, #custom-color-options, .mode-toggle-group, #btn-app-quit, #btn-app-duplicate')) {
+                    return;
+                }
+                e.preventDefault();
+                card.classList.toggle('show-details');
+                saveDetailsState();
+                const detailsEl = card.querySelector('.card-inner-details');
+                if (detailsEl) detailsEl.dataset.scrolling = "";
+                setTimeout(applyAutoScroll, 50);
+            });
+            
+            card.addEventListener('click', (e) => {
+                // Block fullscreen only when clicking inside the selector dropdown / mode toggle area
+                if (e.target && e.target.closest('.disk-selector-wrapper, #disk-select, .disk-select-dropdown, #custom-disk-select, #custom-color-select, #custom-color-options, .mode-toggle-group, #btn-app-quit, #btn-app-duplicate')) {
+                    return;
+                }
+
+                const isFullscreen = card.classList.contains('fullscreen');
+                
+                // If opening, close others first
+                if (!isFullscreen) {
+                    document.querySelectorAll('.card.fullscreen').forEach(c => c.classList.remove('fullscreen'));
+                }
+                
+                card.classList.toggle('fullscreen');
+                
+                if (card.classList.contains('fullscreen')) {
+                    overlay.classList.add('active');
+                    const cardClass = Array.from(card.classList).find(c => c.startsWith('card-'));
+                    if (cardClass) {
+                        localStorage.setItem(`rizkyby_${windowId}_fullscreen`, cardClass);
+                        saveConfig({ fullscreen: cardClass });
+                    }
+                } else {
+                    overlay.classList.remove('active');
+                    localStorage.setItem(`rizkyby_${windowId}_fullscreen`, '');
+                    saveConfig({ fullscreen: '' });
+                }
+                setTimeout(() => {
+                    window.dispatchEvent(new Event('resize'));
+                }, 50);
+            });
+        });
+        
+        overlay.addEventListener('click', () => {
+            document.querySelectorAll('.card.fullscreen').forEach(c => c.classList.remove('fullscreen'));
+            overlay.classList.remove('active');
+            localStorage.setItem(`rizkyby_${windowId}_fullscreen`, '');
+            saveConfig({ fullscreen: '' });
+        });
+        
+        // Initialize Color Palette Selector
+        initColorSelector();
+
+        let isWheelThrottled = false;
+
+        // Capture-phase wheel scroll shortcuts for Color Selector & Mode Toggle
+        document.addEventListener('wheel', function(e) {
+            const colorBox = e.target.closest('#custom-color-select, .custom-color-select-box, #custom-color-label');
+            const isInsideMenu = e.target.closest('.custom-color-options-menu, .custom-disk-options-menu');
+            if (colorBox && !isInsideMenu) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (isWheelThrottled) return;
+                isWheelThrottled = true;
+                setTimeout(() => { isWheelThrottled = false; }, 120);
+
+                const palettes = getActivePalettes();
+                const keys = Object.keys(palettes);
+                let idx = keys.indexOf(currentPalette);
+                if (idx === -1) idx = 0;
+
+                if (e.deltaY > 0) {
+                    idx = (idx + 1) % keys.length;
+                } else {
+                    idx = (idx - 1 + keys.length) % keys.length;
+                }
+                setPalette(keys[idx]);
+                return;
+            }
+
+            const modeToggle = e.target.closest('.mode-toggle-group, #btn-mode-dark, #btn-mode-light');
+            const isQuitOrDup = e.target.closest('#btn-app-quit, #btn-app-duplicate');
+            if (modeToggle && !isQuitOrDup) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (isWheelThrottled) return;
+                isWheelThrottled = true;
+                setTimeout(() => { isWheelThrottled = false; }, 200);
+
+                const nextMode = currentThemeMode === 'dark' ? 'light' : 'dark';
+                setThemeMode(nextMode);
+                return;
+            }
+        }, { passive: false, capture: true });
+
+        // Immediately blur clicked elements to remove lingering focus boxes / outlines
+        document.addEventListener('mouseup', function(e) {
+            if (e.target && typeof e.target.blur === 'function') {
+                setTimeout(() => {
+                    try { e.target.blur(); } catch(err) {}
+                }, 50);
+            }
+        });
+
+        async function restoreSavedState() {
+            let cfg = {};
+            try {
+                const res = await fetch('/api/config?win=' + encodeURIComponent(windowId));
+                if (res.ok) cfg = await res.json();
+            } catch(e) {}
+
+            // Restore right-click details mode per card
+            let activeDetails = [];
+            if (cfg.details && Array.isArray(cfg.details)) {
+                activeDetails = cfg.details;
+            } else if (localStorage.getItem('rizkyby_details')) {
+                activeDetails = localStorage.getItem('rizkyby_details').split(',');
+            }
+
+            if (activeDetails && activeDetails.length > 0) {
+                activeDetails.forEach(cls => {
+                    if (cls.trim()) {
+                        const targetCard = document.querySelector('.' + cls.trim());
+                        if (targetCard) {
+                            targetCard.classList.add('show-details');
+                        }
+                    }
+                });
+            } else {
+                document.querySelectorAll('.card').forEach(c => c.classList.remove('show-details'));
+            }
+
+            // Restore font zoom size
+            const savedZoom = cfg.font_size || localStorage.getItem(`rizkyby_${windowId}_font_size`) || localStorage.getItem('rizkyby_font_size');
+            if (savedZoom) {
+                currentZoom = parseInt(savedZoom, 10);
+                document.documentElement.style.fontSize = currentZoom + 'px';
+            }
+
+            // Restore Theme Mode (Dark/Light) and its saved per-mode palette
+            if (cfg.palette_dark) localStorage.setItem(`rizkyby_${windowId}_palette_dark`, cfg.palette_dark);
+            if (cfg.palette_light) localStorage.setItem(`rizkyby_${windowId}_palette_light`, cfg.palette_light);
+            const savedMode = cfg.mode || localStorage.getItem(`rizkyby_${windowId}_mode`) || 'dark';
+            const activePalette = savedMode === 'light'
+                ? (cfg.palette_light || localStorage.getItem(`rizkyby_${windowId}_palette_light`) || 'breeze')
+                : (cfg.palette_dark || localStorage.getItem(`rizkyby_${windowId}_palette_dark`) || 'cyberpunk');
+            setThemeMode(savedMode, activePalette);
+
+            // Restore Fullscreen Card Mode
+            const savedFsCard = cfg.fullscreen || localStorage.getItem(`rizkyby_${windowId}_fullscreen`) || localStorage.getItem('rizkyby_fullscreen');
+            if (savedFsCard) {
+                setTimeout(() => {
+                    const targetCard = document.querySelector('.' + savedFsCard);
+                    if (targetCard) {
+                        document.querySelectorAll('.card.fullscreen').forEach(c => c.classList.remove('fullscreen'));
+                        targetCard.classList.add('fullscreen');
+                        const overlayEl = document.getElementById('fs-overlay');
+                        if (overlayEl) overlayEl.classList.add('active');
+                        window.dispatchEvent(new Event('resize'));
+                    }
+                }, 300);
+            }
+        }
+
+        // Auto restore user's last saved state on launch
+        restoreSavedState();
+</script>
+</body>
+
+</html>

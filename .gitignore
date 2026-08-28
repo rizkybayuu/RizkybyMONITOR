@@ -1,0 +1,20 @@
+# Python cache & virtualenv
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+env/
+
+# Backup & local temporary files
+*.bak
+*.swp
+*~
+
+# User runtime configuration (contains local window positions and preferences)
+config.json
+
+# IDE / OS metadata
+.DS_Store
+.idea/
+.vscode/
