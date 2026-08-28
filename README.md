@@ -60,7 +60,7 @@ sudo apt install python3-pip python3-gi gir1.2-gtk-3.0 libwebkit2gtk-4.0-dev net
 ### Setup Virtual Environment & Run
 
 ```bash
-git clone https://github.com/your-username/RizkybyMONITOR.git
+git clone https://github.com/rizkybayuu/RizkybyMONITOR.git
 cd RizkybyMONITOR
 
 python3 -m venv venv
