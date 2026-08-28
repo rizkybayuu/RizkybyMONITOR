@@ -207,43 +207,34 @@ def toggle_on_top(win_id):
         setattr(target_win, '_is_pinned_on_top', new_status)
 
         def _apply_on_top():
-            # Method A: PyWebView property
+            # 1. Native PyWebView Property Setter
             try:
                 target_win.on_top = new_status
             except: pass
 
-            # Method B: Direct GTK Window set_keep_above lookup
+            # 2. Native PyWebView GTK Module set_on_top
             try:
-                gtk_win = None
-                if hasattr(target_win, 'gui') and hasattr(target_win.gui, 'window'):
-                    gtk_win = target_win.gui.window
-                elif hasattr(target_win, 'native_window'):
-                    gtk_win = target_win.native_window
-                elif hasattr(target_win, '_window'):
-                    gtk_win = target_win._window
-
-                if gtk_win and hasattr(gtk_win, 'set_keep_above'):
-                    gtk_win.set_keep_above(new_status)
+                import webview.platforms.gtk as gtk_platform
+                gtk_platform.set_on_top(target_win.uid, new_status)
             except: pass
 
-            # Method C: PyWebView GTK Platform lookup
+            # 3. Direct GtkWindow set_keep_above
             try:
-                import pywebview.platforms.gtk as gtk_platform
-                if hasattr(gtk_platform, 'windows') and target_win.uid in gtk_platform.windows:
-                    v = gtk_platform.windows[target_win.uid]
-                    if hasattr(v, 'window') and hasattr(v.window, 'set_keep_above'):
-                        v.window.set_keep_above(new_status)
+                import webview.platforms.gtk as gtk_platform
+                if hasattr(gtk_platform, 'BrowserView') and target_win.uid in gtk_platform.BrowserView.instances:
+                    bv = gtk_platform.BrowserView.instances[target_win.uid]
+                    if hasattr(bv, 'window') and bv.window:
+                        bv.window.set_keep_above(new_status)
             except: pass
 
-            # Method D: Multi-command X11 / DE tool fallback (wmctrl & xdotool)
+            # 4. OS WM Fallbacks (wmctrl / xdotool)
             try:
                 import subprocess
-                win_title = getattr(target_win, 'title', 'RizkybyMONITOR')
                 action = "add" if new_status else "remove"
-                subprocess.run(["wmctrl", "-r", win_title, "-b", f"{action},above"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                subprocess.run(["wmctrl", "-r", "RizkybyMONITOR", "-b", f"{action},above"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 subprocess.run(["wmctrl", "-r", ":ACTIVE:", "-b", f"{action},above"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 if new_status:
-                    subprocess.run(["xdotool", "search", "--name", win_title, "windowraise"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    subprocess.run(["xdotool", "search", "--name", "RizkybyMONITOR", "windowraise"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             except: pass
             return False
 
@@ -252,7 +243,8 @@ def toggle_on_top(win_id):
             gi.require_version('Gtk', '3.0')
             from gi.repository import GLib
             GLib.idle_add(_apply_on_top)
-            GLib.timeout_add(150, _apply_on_top)
+            GLib.timeout_add(100, _apply_on_top)
+            GLib.timeout_add(300, _apply_on_top)
         except:
             _apply_on_top()
 
