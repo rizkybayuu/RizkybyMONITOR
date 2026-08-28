@@ -497,12 +497,15 @@ def get_disk_stats():
     if rizky_initial_writes is not None and rizky_current_writes > 0:
         session_tbw = (rizky_current_writes - rizky_initial_writes) * 512
         
-    current_lifetime_tbw = base_tbw_cached + (session_tbw / (1024 ** 4))
-    remaining_tbw = max(0.0, 600.0 - current_lifetime_tbw)
-
-    if now - last_save_time > 10:
-        save_tbw(current_lifetime_tbw)
-        last_save_time = now
+    if rizky_current_writes > 0:
+        current_lifetime_tbw = base_tbw_cached + (session_tbw / (1024 ** 4))
+        remaining_tbw = max(0.0, 600.0 - current_lifetime_tbw)
+        if now - last_save_time > 10:
+            save_tbw(current_lifetime_tbw)
+            last_save_time = now
+    else:
+        current_lifetime_tbw = 0.0
+        remaining_tbw = 0.0
 
     # 4. Build Detailed Disks List with Priority Hierarchy
     disks_list = []
