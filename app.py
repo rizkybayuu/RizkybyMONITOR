@@ -142,6 +142,7 @@ def open_duplicate_window():
         kwargs['y'] = int(w_y)
 
     w = webview.create_window(**kwargs)
+    w.win_id = new_id
     bind_window_events(w, new_id)
     
     if w_x is not None and w_y is not None:
@@ -165,18 +166,26 @@ def open_duplicate_window():
 def close_specific_window(win_id):
     global active_windows
     target_win = None
-    win_str = str(win_id)
+    try:
+        win_int = int(win_id)
+    except:
+        win_int = 1
+
     for w in active_windows:
-        if f'RizkybyMONITOR {win_str}' in getattr(w, 'title', '') or (len(active_windows) == 1 and win_str == '1'):
+        if getattr(w, 'win_id', None) == win_int:
             target_win = w
             break
+
     if not target_win:
         try:
-            idx = int(win_str) - 1
+            idx = win_int - 1
             if 0 <= idx < len(active_windows):
                 target_win = active_windows[idx]
         except: pass
         
+    if not target_win and len(active_windows) > 0:
+        target_win = active_windows[0]
+
     if target_win:
         try:
             target_win.destroy()
@@ -184,16 +193,20 @@ def close_specific_window(win_id):
 
 def toggle_on_top(win_id):
     global active_windows
-    win_str = str(win_id)
+    try:
+        win_int = int(win_id)
+    except:
+        win_int = 1
+
     target_win = None
     for w in active_windows:
-        title = getattr(w, 'title', '')
-        if f'MONITOR {win_str}' in title or f'RizkybyMONITOR {win_str}' in title or (len(active_windows) == 1 and win_str == '1'):
+        if getattr(w, 'win_id', None) == win_int:
             target_win = w
             break
+
     if not target_win:
         try:
-            idx = int(win_str) - 1
+            idx = win_int - 1
             if 0 <= idx < len(active_windows):
                 target_win = active_windows[idx]
         except: pass
@@ -308,6 +321,7 @@ if __name__ == '__main__':
             kwargs['y'] = int(w_y)
 
         w = webview.create_window(**kwargs)
+        w.win_id = i
         bind_window_events(w, i)
 
         if w_x is not None and w_y is not None:
@@ -327,4 +341,4 @@ if __name__ == '__main__':
 
         active_windows.append(w)
 
-    webview.start()
+    webview.start(gui='gtk')
