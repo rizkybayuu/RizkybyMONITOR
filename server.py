@@ -34,7 +34,7 @@ def set_toggle_on_top_callback(fn):
 RIZKY_UUID = "67003a8d-300a-4430-8468-ed19441e0027"
 rizky_base_dev = None
 rizky_initial_writes = None
-BASE_TBW = 8.86 # Hasil baca manual dari smartctl (dalam TB)
+BASE_TBW = 0.0
 MAX_TBW = 600.0 # Asumsi SSD 1TB SanDisk Extreme
 
 cpu_model_name = "Unknown CPU"
@@ -369,10 +369,10 @@ def load_tbw():
     try:
         if os.path.exists(TBW_STATE_FILE):
             with open(TBW_STATE_FILE, 'r') as f:
-                return float(json.load(f).get('base_tbw', 8.900))
+                return float(json.load(f).get('base_tbw', 0.0))
     except:
         pass
-    return 8.900 # Fallback initial
+    return 0.0
 
 def save_tbw(tbw):
     try:

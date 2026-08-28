@@ -117,6 +117,38 @@ def bind_window_events(w, win_id):
     w.events.resized += on_resized
     w.events.closed += (lambda: on_single_window_closed(w, win_id))
 
+    def _force_frameless_gtk(win_obj):
+        time.sleep(0.15)
+        try:
+            import gi
+            gi.require_version('Gtk', '3.0')
+            from gi.repository import GLib
+            
+            def _apply_gtk():
+                try:
+                    import webview.platforms.gtk as gtk_platform
+                    bv = None
+                    if hasattr(gtk_platform, 'BrowserView') and hasattr(gtk_platform.BrowserView, 'instances'):
+                        bv = gtk_platform.BrowserView.instances.get(win_obj.uid)
+                    if not bv and hasattr(gtk_platform, 'windows'):
+                        bv = gtk_platform.windows.get(win_obj.uid)
+                    if bv and hasattr(bv, 'window') and bv.window:
+                        bv.window.set_decorated(False)
+                        try:
+                            bv.window.set_titlebar(None)
+                        except: pass
+                        gdk_win = bv.window.get_window()
+                        if gdk_win:
+                            gdk_win.set_decorations(0)
+                except: pass
+                return False
+
+            GLib.idle_add(_apply_gtk)
+            GLib.timeout_add(100, _apply_gtk)
+            GLib.timeout_add(300, _apply_gtk)
+        except: pass
+    threading.Thread(target=_force_frameless_gtk, args=(w,), daemon=True).start()
+
 def open_duplicate_window():
     global active_windows
     new_id = len(active_windows) + 1
