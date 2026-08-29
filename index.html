@@ -92,7 +92,6 @@
             flex-shrink: 0;
             gap: 1rem;
             padding: 0.3rem 0.5rem;
-            -webkit-app-region: drag;
             user-select: none;
         }
 
@@ -101,6 +100,7 @@
             min-width: 0;
             overflow: hidden;
             white-space: nowrap;
+            -webkit-app-region: drag;
         }
 
         .header-title h1 {
@@ -128,7 +128,7 @@
             white-space: nowrap;
             scrollbar-width: none;
             -ms-overflow-style: none;
-            -webkit-app-region: no-drag;
+            -webkit-app-region: no-drag !important;
             margin-left: auto;
             width: 100%;
         }
@@ -186,6 +186,7 @@
             z-index: 999;
             align-self: center;
             flex-shrink: 0;
+            -webkit-app-region: no-drag !important;
         }
 
         .mode-toggle-group {
@@ -722,21 +723,21 @@
 
         .custom-color-options-menu {
             display: none;
-            position: absolute;
-            top: 110%;
-            left: 0;
-            margin-top: 4px;
+            position: fixed;
             background: var(--bg-color);
             border: 1px solid var(--accent-purple);
             border-radius: 14px;
-            z-index: 99999;
-            min-width: 180px;
-            max-height: 220px;
+            z-index: 999999;
+            min-width: 190px;
+            max-height: 250px;
             overflow-y: auto;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.7);
+            box-shadow: 0 10px 35px rgba(0,0,0,0.8), 0 0 20px rgba(168, 85, 247, 0.35);
+            -webkit-app-region: no-drag !important;
+            user-select: none;
+            pointer-events: auto;
         }
         .custom-color-options-menu.show {
-            display: block;
+            display: block !important;
         }
         .custom-color-option-item {
             padding: 7px 12px;
@@ -786,6 +787,7 @@
 </head>
 <body>
     <div id="fs-overlay"></div>
+    <div class="custom-color-options-menu" id="custom-color-options" style="-webkit-app-region: no-drag !important;"></div>
     
 
     <header>
@@ -797,26 +799,23 @@
         <div class="sensors-badge-wrapper auto-scroll-x" id="sensors-badge-scroll-wrapper">
             <div class="sensors-badge" id="header-sensors-badge">
                 <!-- Color Selector (Replicating Disk Selector format) -->
-                <div class="custom-color-select-box" id="custom-color-select" onclick="toggleColorMenu(event)" data-tooltip="color_select">
-                    <div class="auto-scroll-x" id="custom-color-label" style="max-width: 130px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none;">
-                        <span id="color-label-text">🎨 Neon Cyberpunk</span>
+                <div class="custom-color-select-box" id="custom-color-select" onclick="toggleColorMenu(event)" data-tooltip="color_select" style="-webkit-app-region: no-drag !important; cursor: pointer;">
+                    <div class="auto-scroll-x" id="custom-color-label" style="max-width: 130px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none; -webkit-app-region: no-drag !important;">
+                        <span id="color-label-text" style="-webkit-app-region: no-drag !important;">🎨 Neon Cyberpunk</span>
                     </div>
-                    <span style="font-size: 0.6rem; margin-left: 2px;">▼</span>
-                    <div class="custom-color-options-menu" id="custom-color-options">
-                        <!-- Populated via JS -->
-                    </div>
+                    <span style="font-size: 0.6rem; margin-left: 2px; -webkit-app-region: no-drag !important;">▼</span>
                 </div>
 
                 <!-- Light / Dark Mode Toggle Buttons -->
-                <div class="mode-toggle-group" data-tooltip="mode_toggle">
-                    <button id="btn-mode-dark" class="mode-btn active" onclick="setThemeMode('dark')" title="Dark Mode">🌙</button>
-                    <button id="btn-mode-light" class="mode-btn" onclick="setThemeMode('light')" title="Light Mode">☀️</button>
+                <div class="mode-toggle-group" data-tooltip="mode_toggle" style="-webkit-app-region: no-drag;">
+                    <button id="btn-mode-dark" class="mode-btn active">🌙</button>
+                    <button id="btn-mode-light" class="mode-btn">☀️</button>
                 </div>
 
                 <div class="sensor-item" data-tooltip="temperature"><span style="color:var(--accent-red)">🌡️</span> <span id="temp-val">0°C</span></div>
                 <div class="sensor-item" data-tooltip="battery"><span style="color:var(--accent-green)">🔋</span> <span id="batt-val">100%</span></div>
-                <button id="btn-app-duplicate" class="mode-btn" onclick="duplicateWindow()" oncontextmenu="toggleAlwaysOnTop(); return false;" data-tooltip="duplicate" style="font-weight: 700; font-size: 1.05rem; color: var(--accent-blue);" title="Left-Click: Duplicate Window | Right-Click: Toggle Keep Above">🗗</button>
-                <button id="btn-app-quit" class="mode-btn" onclick="quitApp()" oncontextmenu="exitWindow(); return false;" data-tooltip="quit" style="font-weight: 700; font-size: 1.05rem; color: var(--accent-blue);" title="Left-Click: Quit All & Save | Right-Click: Exit Window">⏻</button>
+                <button id="btn-app-duplicate" class="mode-btn" onclick="duplicateWindow()" oncontextmenu="toggleAlwaysOnTop(); return false;" data-tooltip="duplicate" style="font-weight: 700; font-size: 1.05rem; color: var(--accent-blue); -webkit-app-region: no-drag;">🗗</button>
+                <button id="btn-app-quit" class="mode-btn" data-tooltip="quit" style="font-weight: 700; font-size: 1.05rem; color: var(--accent-blue); -webkit-app-region: no-drag;">⏻</button>
             </div>
         </div>
     </header>
@@ -1035,46 +1034,66 @@
                 </div>
             </div>
             <div class="split-2-1">
-                <div class="card-content">
-                    <div style="display:flex; justify-content:space-between; width:100%;">
-                        <div class="metric" style="width:48%;">
-                            <div class="metric-header" style="justify-content: flex-start; gap: 5px;">
-                                <span style="color:var(--accent-orange); font-weight:700;">R:</span>
-                                <span class="metric-value" id="disk-read" style="color:var(--accent-orange); font-weight:700;">0 KB/s</span>
+                <div class="card-content" style="display:flex; flex-direction:column; height:100%; gap:0.5vh; overflow:hidden;">
+                    <!-- Top 50%: R/W Metrics & Disk Chart -->
+                    <div style="flex: 1 1 50%; min-height: 0; display:flex; flex-direction:column; justify-content:space-between;">
+                        <div style="display:flex; justify-content:space-between; width:100%;">
+                            <div class="metric" style="width:48%;">
+                                <div class="metric-header" style="justify-content: flex-start; gap: 4px;">
+                                    <span style="color:var(--accent-orange); font-size:0.6rem;">R:</span>
+                                    <span class="metric-value" id="disk-read" style="font-size: 0.68rem !important; font-weight: 700 !important; color: var(--accent-orange);">0 KB/s</span>
+                                </div>
+                            </div>
+                            <div class="metric" style="width:48%;">
+                                <div class="metric-header" style="justify-content: flex-end; gap: 4px;">
+                                    <span style="color:var(--accent-red); font-size:0.6rem;">W:</span>
+                                    <span class="metric-value" id="disk-write" style="font-size: 0.68rem !important; font-weight: 700 !important; color: var(--accent-red);">0 KB/s</span>
+                                </div>
                             </div>
                         </div>
-                        <div class="metric" style="width:48%;">
-                            <div class="metric-header" style="justify-content: flex-end; gap: 5px;">
-                                <span style="color:var(--accent-red); font-weight:700;">W:</span>
-                                <span class="metric-value" id="disk-write" style="color:var(--accent-red); font-weight:700;">0 KB/s</span>
-                            </div>
+                        <div class="chart-container" style="flex:1; min-height:0; width:100%; position:relative; margin-top:0.3vh;">
+                            <canvas id="diskChart"></canvas>
                         </div>
                     </div>
-                    <div class="chart-container-large" style="margin-top: 1vh;">
-                        <canvas id="diskChart"></canvas>
+                    <!-- Bottom 50%: Disk I/O Process List (1:1 Ratio) -->
+                    <div style="flex: 1 1 50%; min-height: 0; display:flex; flex-direction:column; overflow:hidden; border-top:1px solid rgba(255,255,255,0.06); padding-top:0.4vh;">
+                        <div class="metric-header" style="font-weight:600; flex-shrink:0; margin-bottom:0.3vh; color:var(--accent-orange);">Processes:</div>
+                        <div class="list-container" id="top-disk" style="flex:1; min-height:0; overflow-y:auto; scrollbar-width:none;">
+                            <!-- Populated via JS -->
+                        </div>
                     </div>
                 </div>
                 <div class="card-content" style="overflow-y: auto; max-height: 100%; height: 100%; display: flex; flex-direction: column; gap: 0.3vh; scrollbar-width: none; -ms-overflow-style: none;">
-                    <div class="metric-header" style="color:var(--accent-orange); font-weight:600; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:4px; margin-bottom:2px; white-space:normal; word-break:break-word; flex-shrink: 0;" id="selected-disk-name">Portable SSD (sda)</div>
+                    <div class="metric-header" style="color:var(--accent-orange); font-weight:600; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:4px; margin-bottom:2px; white-space:normal; word-break:break-word; flex-shrink: 0;" id="selected-disk-name">Detecting Storage...</div>
                     
                     <div class="metric" style="margin-top:0.3vh; flex-shrink: 0;">
                         <div class="metric-header" style="margin-bottom:0;" id="label-stat-1">TBW Used (Written)</div>
-                        <span class="metric-value" style="color:var(--accent-red); white-space:normal; word-break:break-word; font-size:clamp(0.65rem, 0.8vw, 0.8rem);" id="val-stat-1">8.902 TB</span>
+                        <span class="metric-value" style="color:var(--accent-red); white-space:normal; word-break:break-word; font-size:clamp(0.65rem, 0.8vw, 0.8rem);" id="val-stat-1">0.000 TB</span>
                     </div>
                     
                     <div class="metric" style="margin-top:0.3vh; flex-shrink: 0;">
                         <div class="metric-header" style="margin-bottom:0;" id="label-stat-2">TBW Remaining Life / Health</div>
-                        <span class="metric-value" style="color:var(--accent-green); white-space:normal; word-break:break-word; font-size:clamp(0.65rem, 0.8vw, 0.8rem);" id="val-stat-2">591.098 TB</span>
+                        <span class="metric-value" style="color:var(--accent-green); white-space:normal; word-break:break-word; font-size:clamp(0.65rem, 0.8vw, 0.8rem);" id="val-stat-2">0.000 TB</span>
                     </div>
                     
                     <div class="metric" style="margin-top:0.3vh; flex-shrink: 0;">
                         <div class="metric-header" style="margin-bottom:0;" id="label-stat-3">Drive Type & Transport</div>
-                        <span class="metric-value" style="color:var(--accent-cyan); white-space:normal; word-break:break-word; font-size:clamp(0.65rem, 0.8vw, 0.8rem);" id="val-stat-3">Portable SSD (USB)</span>
+                        <span class="metric-value" style="color:var(--accent-cyan); white-space:normal; word-break:break-word; font-size:clamp(0.65rem, 0.8vw, 0.8rem);" id="val-stat-3">Storage Device</span>
                     </div>
 
                     <div class="metric" style="margin-top:0.3vh; flex-shrink: 0;">
                         <div class="metric-header" style="margin-bottom:0;" id="label-stat-4">SMART Health / Temp</div>
-                        <span class="metric-value" style="color:var(--accent-purple); white-space:normal; word-break:break-word; font-size:clamp(0.65rem, 0.8vw, 0.8rem);" id="val-stat-4">PASSED | 38 °C</span>
+                        <span class="metric-value" style="color:var(--accent-purple); white-space:normal; word-break:break-word; font-size:clamp(0.65rem, 0.8vw, 0.8rem);" id="val-stat-4">Detecting...</span>
+                    </div>
+
+                    <div class="metric" style="margin-top:0.3vh; flex-shrink: 0;">
+                        <div class="metric-header" style="margin-bottom:0;" id="label-stat-5">Drive Capacity & Node</div>
+                        <span class="metric-value" style="color:var(--accent-blue); white-space:normal; word-break:break-word; font-size:clamp(0.65rem, 0.8vw, 0.8rem);" id="val-stat-5">0.0 GB</span>
+                    </div>
+
+                    <div class="metric" style="margin-top:0.3vh; flex-shrink: 0;">
+                        <div class="metric-header" style="margin-bottom:0;" id="label-stat-6">Partition Used & Free Space</div>
+                        <span class="metric-value" style="color:var(--accent-green); white-space:normal; word-break:break-word; font-size:clamp(0.65rem, 0.8vw, 0.8rem);" id="val-stat-6">Detecting Usage...</span>
                     </div>
                 </div>
             </div>
@@ -1085,7 +1104,7 @@
     <script>
         // Global JS Tooltips
         window.hardwareTooltips = {
-            header: "<strong>🎮 RizkybyMONITOR - Controls & Dashboard Guide:</strong><br>• <strong>Left Click:</strong> Toggle Fullscreen Zoom Mode on any card<br>• <strong>Right Click:</strong> Toggle Raw Detailed Long Text Mode<br>• <strong>Middle Click on Card:</strong> Copy visible card text content to Clipboard<br>• <strong>Middle Click on Header/Title:</strong> Copy Hover Tooltip Information to Clipboard<br>• <strong>Mouse Wheel:</strong> Smooth Manual Scroll (Auto-Scroll pauses & resumes seamlessly)<br>• <strong>Ctrl + Mouse Wheel:</strong> Adjust Dashboard UI Font Size & Zoom Level<br>• <strong>Ctrl + Q:</strong> Quit All Windows & Save Layout<br>• <strong>Alt + Q:</strong> Exit Current Window & Remove Memory<br>• <strong>Ctrl + N:</strong> Duplicate Window<br>• <strong>Ctrl + Shift + A:</strong> Toggle Keep Above Other (Pin Window)<br>• <strong>Alt + F3:</strong> Open OS Window Operations Menu",
+            header: "<strong>🎮 RizkybyMONITOR - Window & Dashboard Controls:</strong><br>• <strong>Super + Left-Click Drag</strong> (or Header Drag): Move / drag frameless window<br>• <strong>Super + Right-Click Drag</strong> (or Alt + Right-Click Drag): Resize frameless window<br>• <strong>Left Click on Card:</strong> Toggle Fullscreen Zoom Mode<br>• <strong>Right Click on Card:</strong> Toggle Detailed CLI Diagnostic Text Mode<br>• <strong>Middle Click on Card:</strong> Copy visible card text to Clipboard<br>• <strong>Middle Click on Title:</strong> Copy full hover tooltip info to Clipboard<br>• <strong>Mouse Wheel on Color Selector:</strong> Quick cycle color palettes<br>• <strong>Left Click on Color Selector:</strong> Open color palette dropdown menu<br>• <strong>Mouse Wheel on Theme Toggle:</strong> Quick toggle Dark 🌙 / Light ☀️ mode<br>• <strong>Ctrl + Mouse Wheel:</strong> Adjust UI zoom & base font size<br>• <strong>Ctrl + N:</strong> Duplicate window into new instance<br>• <strong>Ctrl + Shift + A:</strong> Toggle Always-On-Top (Pin above windows)<br>• <strong>Ctrl + Q:</strong> Quit all windows and save layout<br>• <strong>Alt + Q:</strong> Exit current window and clear its local session memory",
             cpu: "Loading CPU Model...",
             gpu: "Loading GPU Model...",
             ram: "Primary Volatile Memory (Physical RAM)",
@@ -1162,6 +1181,44 @@
             }
         });
 
+        const urlParams = new URLSearchParams(window.location.search);
+        const windowId = urlParams.get('win') || '1';
+
+        const safeStorage = {
+            _memory: {},
+            setItem: function(key, value) {
+                try {
+                    localStorage.setItem(key, value);
+                } catch (e) {
+                    this._memory[key] = String(value);
+                }
+            },
+            getItem: function(key) {
+                try {
+                    return localStorage.getItem(key);
+                } catch (e) {
+                    return this._memory[key] || null;
+                }
+            },
+            removeItem: function(key) {
+                try {
+                    localStorage.removeItem(key);
+                } catch (e) {
+                    delete this._memory[key];
+                }
+            }
+        };
+
+        async function saveConfig(obj) {
+            try {
+                await fetch('/api/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ window_id: windowId, settings: obj })
+                });
+            } catch(e) {}
+        }
+
         // Set chart default styling
         Chart.defaults.color = '#94a3b8';
         Chart.defaults.font.family = "'Outfit', sans-serif";
@@ -1174,9 +1231,10 @@
         }
         
         function formatSpeed(bytesPerSec) {
-            if (bytesPerSec < 1024) return Math.round(bytesPerSec) + ' B/s';
-            if (bytesPerSec < 1024 ** 2) return (bytesPerSec / 1024).toFixed(1) + ' KB/s';
-            return (bytesPerSec / (1024 ** 2)).toFixed(1) + ' MB/s';
+            const b = Number(bytesPerSec) || 0;
+            if (b < 1024) return Math.round(b) + ' B/s';
+            if (b < 1024 ** 2) return (b / 1024).toFixed(1) + ' KB/s';
+            return (b / (1024 ** 2)).toFixed(1) + ' MB/s';
         }
 
         // Initialize empty arrays for 60 seconds
@@ -1402,6 +1460,7 @@
         let _prevTopMem = '';
         let _prevTopNet = '';
         let _prevTopGpu = '';
+        let _prevTopDisk = '';
 
         async function fetchStats() {
             try {
@@ -1410,22 +1469,24 @@
 
                 // Update Hardware Names Tooltips
                 if(data.hardware) {
-                    window.hardwareTooltips.cpu = `<strong>Processor Architecture:</strong><br>${data.hardware.cpu_model}<br><strong>Core Config:</strong> 10 Cores (2 P-Cores, 8 E-Cores) | 12 Threads<br><strong>Cache & Clock:</strong> 12 MB Intel Smart Cache | 4.40 GHz Max Boost`;
-                    window.hardwareTooltips.gpu = `<strong>Graphics Hardware:</strong><br>${data.hardware.gpu_model}<br><strong>Subsystem Driver:</strong> i915 Linux Driver (Intel Iris Xe Graphics)<br><strong>Hardware Engines:</strong> Render/3D (RCS), Video Decode (VCS), Blitter (BCS), Video Enhance (VECS)`;
+                    window.hardwareTooltips.cpu = `<strong>Processor Architecture:</strong><br>${data.hardware.cpu_model}<br><strong>Core Config:</strong> 10 Cores (2 P-Cores, 8 E-Cores) | 12 Threads<br><strong>Cache & Boost:</strong> 12 MB Intel Smart Cache | 4.40 GHz Max Boost<br><strong>Instruction Set:</strong> x86_64, AVX2, SSE4.2, Intel VT-x`;
+                    window.hardwareTooltips.gpu = `<strong>Graphics Subsystem:</strong><br>${data.hardware.gpu_model}<br><strong>Subsystem Driver:</strong> i915 Linux Driver (Intel Iris Xe Graphics)<br><strong>Hardware Engines:</strong> Render/3D (RCS), Video Decode (VCS), Blitter (BCS), Video Enhance (VECS)<br><strong>Engine Clock:</strong> ${data.gpu.freq} MHz`;
                 }
                 if(data.details) {
-                    const ramType = Array.isArray(data.details.ram_type) ? data.details.ram_type.join('<br>') : (data.details.ram_type || "Slot 1: 8 GB DDR4-3200 SODIMM<br>Slot 2: 8 GB DDR4-3200 SODIMM");
-                    window.hardwareTooltips.ram = `<strong>Primary Volatile Memory (RAM):</strong><br>${ramType}<br><strong>Architecture:</strong> 16 GB Dual-Channel SODIMM DDR4-3200`;
-                    window.hardwareTooltips.zram = `<strong>ZRAM Compressed Swap Engine:</strong><br>${data.details.zram_info || '8.0 GB zstd compressed in-RAM swap pool'}<br><strong>Compression:</strong> zstd parallel block compression engine`;
+                    const ramType = Array.isArray(data.details.ram_type) ? data.details.ram_type.join('<br>') : (data.details.ram_type || "Slot 1: 8 GiB DDR4 (3200 MT/s)<br>Slot 2: 8 GiB DDR4 (3200 MT/s)");
+                    window.hardwareTooltips.ram = `<strong>Primary Volatile Memory (RAM):</strong><br>${ramType}<br><strong>Architecture:</strong> 16.0 GB Dual-Channel SODIMM DDR4-3200<br><strong>Hierarchy:</strong> High-Throughput Interleaved Physical Memory`;
+                    window.hardwareTooltips.zram = `<strong>ZRAM Compressed Swap Engine:</strong><br>${data.details.zram_info || '8.0 GB zstd compressed in-RAM swap pool'}<br><strong>Compression:</strong> zstd parallel block compression engine<br><strong>Access Latency:</strong> Zero block device storage latency`;
                     window.hardwareTooltips.swap = `<strong>System Swap Subsystem:</strong><br>${data.details.swap_info || 'Active ZRAM Swap Pool (Priority 100)'}<br><strong>Paging Strategy:</strong> Zero disk latency, high-throughput memory exchange`;
                     window.hardwareTooltips.ssd = `<strong>Storage Devices & Drives:</strong><br>${data.details.ssd_model || 'SanDisk Portable SSD (931.5G) + NVMe (238.5G)'}<br><strong>Health Telemetry:</strong> Real-time TBW (Total Bytes Written) & SMART status`;
                     window.hardwareTooltips.network = data.details.network_type || 'Intel Wi-Fi + Realtek Gigabit Ethernet';
-                    window.hardwareTooltips.battery = `<strong>Power & Battery Management:</strong><br>${data.details.battery_tech || 'SR Real Battery (100% Charged)'}`;
+                    window.hardwareTooltips.battery = `<strong>Power & Battery Management:</strong><br>${data.details.battery_tech || 'SR Real Battery'}`;
+                    window.hardwareTooltips.temperature = `<strong>🌡️ Thermal Management:</strong><br>Current CPU Package Temp: <strong>${data.sensors.temp}°C</strong><br><strong>Sensors:</strong> Real-time coretemp / x86_pkg_temp monitoring`;
                     
                     if(data.details.raw_cpu && document.getElementById('cpu-details').textContent !== data.details.raw_cpu) document.getElementById('cpu-details').textContent = data.details.raw_cpu;
                     if(data.details.raw_gpu && document.getElementById('gpu-details').textContent !== data.details.raw_gpu) document.getElementById('gpu-details').textContent = data.details.raw_gpu;
                     if(data.details.raw_ram && document.getElementById('ram-details').textContent !== data.details.raw_ram) document.getElementById('ram-details').textContent = data.details.raw_ram;
                     if(data.details.raw_net && document.getElementById('net-details').textContent !== data.details.raw_net) document.getElementById('net-details').textContent = data.details.raw_net;
+                    if(data.details.raw_disk && document.getElementById('disk-details') && document.getElementById('disk-details').textContent.startsWith('Loading')) document.getElementById('disk-details').textContent = data.details.raw_disk;
                 }
 
                 // CPU
@@ -1469,24 +1530,37 @@
                 }
 
                 // GPU
-                const gUsage = data.gpu.usage || {rcs:0, bcs:0, vcs:0, vecs:0};
-                document.getElementById('gpu-rcs-val').textContent = `${gUsage.rcs.toFixed(1)}%`;
-                document.getElementById('gpu-rcs-bar').style.width = `${Math.min(100, gUsage.rcs)}%`;
+                const gUsage = data.gpu.usage || {};
+                const rcs = Number(gUsage.rcs) || 0;
+                const bcs = Number(gUsage.bcs) || 0;
+                const vcs = Number(gUsage.vcs) || 0;
+                const vecs = Number(gUsage.vecs) || 0;
                 
-                document.getElementById('gpu-bcs-val').textContent = `${gUsage.bcs.toFixed(1)}%`;
-                document.getElementById('gpu-bcs-bar').style.width = `${Math.min(100, gUsage.bcs)}%`;
+                const rcsValEl = document.getElementById('gpu-rcs-val');
+                if (rcsValEl) rcsValEl.textContent = `${rcs.toFixed(1)}%`;
+                const rcsBarEl = document.getElementById('gpu-rcs-bar');
+                if (rcsBarEl) rcsBarEl.style.width = `${Math.min(100, rcs)}%`;
+                
+                const bcsValEl = document.getElementById('gpu-bcs-val');
+                if (bcsValEl) bcsValEl.textContent = `${bcs.toFixed(1)}%`;
+                const bcsBarEl = document.getElementById('gpu-bcs-bar');
+                if (bcsBarEl) bcsBarEl.style.width = `${Math.min(100, bcs)}%`;
 
-                document.getElementById('gpu-vcs-val').textContent = `${gUsage.vcs.toFixed(1)}%`;
-                document.getElementById('gpu-vcs-bar').style.width = `${Math.min(100, gUsage.vcs)}%`;
+                const vcsValEl = document.getElementById('gpu-vcs-val');
+                if (vcsValEl) vcsValEl.textContent = `${vcs.toFixed(1)}%`;
+                const vcsBarEl = document.getElementById('gpu-vcs-bar');
+                if (vcsBarEl) vcsBarEl.style.width = `${Math.min(100, vcs)}%`;
 
-                document.getElementById('gpu-vecs-val').textContent = `${gUsage.vecs.toFixed(1)}%`;
-                document.getElementById('gpu-vecs-bar').style.width = `${Math.min(100, gUsage.vecs)}%`;
+                const vecsValEl = document.getElementById('gpu-vecs-val');
+                if (vecsValEl) vecsValEl.textContent = `${vecs.toFixed(1)}%`;
+                const vecsBarEl = document.getElementById('gpu-vecs-bar');
+                if (vecsBarEl) vecsBarEl.style.width = `${Math.min(100, vecs)}%`;
 
-                gpuRcsData.push(gUsage.rcs); gpuRcsData.shift();
-                gpuBcsData.push(gUsage.bcs); gpuBcsData.shift();
-                gpuVcsData.push(gUsage.vcs); gpuVcsData.shift();
-                gpuVecsData.push(gUsage.vecs); gpuVecsData.shift();
-                gpuChart.update();
+                gpuRcsData.push(rcs); gpuRcsData.shift();
+                gpuBcsData.push(bcs); gpuBcsData.shift();
+                gpuVcsData.push(vcs); gpuVcsData.shift();
+                gpuVecsData.push(vecs); gpuVecsData.shift();
+                if (gpuChart) gpuChart.update();
 
                 // GPU Processes (Numbered)
                 let gProcs = (data.processes && data.processes.gpu) ? data.processes.gpu : [];
@@ -1560,7 +1634,7 @@
                 netTxData.push(data.network.tx_rate); netTxData.shift();
                 netChart.update();
 
-                // Network Processes (Numbered)
+                // Network Processes (Numbered: Left = Download ▼, Right = Upload ▲)
                 const topNetKey = JSON.stringify(data.processes.net);
                 if (topNetKey !== _prevTopNet) {
                     _prevTopNet = topNetKey;
@@ -1568,11 +1642,11 @@
                         const topNetCont = document.getElementById('top-net');
                         topNetCont.innerHTML = data.processes.net.map((p, idx) => `
                             <div class="list-item" style="display:flex; align-items:center; gap:6px;">
-                                <span style="color: var(--accent-cyan); font-weight: 700; flex-shrink: 0; min-width: 1.6rem;">${idx + 1}.</span>
+                                <span style="color: var(--accent-cyan); font-weight: 700; flex-shrink: 0; min-width: 1.4rem;">${idx + 1}.</span>
                                 <span class="list-name" style="flex:1; min-width:0;" title="${p.name}">${p.name}</span>
-                                <span class="list-val" style="font-weight: 500; font-size: 0.65rem; flex-shrink: 0; display:flex; gap:6px;">
-                                    <span style="color: var(--accent-cyan); font-weight: 500;">▼ ${p.down}</span>
-                                    <span style="color: var(--accent-blue); font-weight: 500;">▲ ${p.up}</span>
+                                <span class="list-val" style="font-weight: 500; font-size: 0.65rem; flex-shrink: 0; display:flex; align-items:center; gap:6px;">
+                                    <span style="color: var(--accent-cyan); font-weight: 500; min-width: 3.2rem; text-align: right;">▼ ${p.down}</span>
+                                    <span style="color: var(--accent-blue); font-weight: 500; min-width: 3.2rem; text-align: right;">▲ ${p.up}</span>
                                 </span>
                             </div>
                         `).join('');
@@ -1581,11 +1655,43 @@
                     }
                 }
 
+                // Disk Processes (Numbered & Auto-scrolling - Tailored Per Disk)
+                let activeDev = selectedDiskId || (data.disk && data.disk.disks && data.disk.disks[0] ? data.disk.disks[0].id : 'sda');
+                let dProcs = (data.processes && data.processes.disk_per_dev && data.processes.disk_per_dev[activeDev]) 
+                    ? data.processes.disk_per_dev[activeDev] 
+                    : ((data.processes && data.processes.disk) ? data.processes.disk : []);
+                const topDiskKey = JSON.stringify(dProcs) + '_' + activeDev;
+                if (topDiskKey !== _prevTopDisk) {
+                    _prevTopDisk = topDiskKey;
+                    const topDiskCont = document.getElementById('top-disk');
+                    if (topDiskCont) {
+                        if (dProcs && dProcs.length > 0) {
+                            topDiskCont.innerHTML = dProcs.map((p, idx) => `
+                                <div class="list-item" style="display:flex; align-items:center; gap:6px;">
+                                    <span style="color: var(--accent-orange); font-weight: 700; flex-shrink: 0; min-width: 1.4rem;">${idx + 1}.</span>
+                                    <span class="list-name" style="flex:1; min-width:0;" title="${p.name}">${p.name}</span>
+                                    <span class="list-val" style="font-weight: 500; font-size: 0.65rem; flex-shrink: 0; display:flex; gap:6px;">
+                                        <span style="color: var(--accent-orange); font-weight: 500;">R: ${p.read}</span>
+                                        <span style="color: var(--accent-red); font-weight: 500;">W: ${p.write}</span>
+                                    </span>
+                                </div>
+                            `).join('');
+                            startScrollAnimation(topDiskCont, true);
+                            topDiskCont.querySelectorAll('.list-name').forEach(el => {
+                                startScrollAnimation(el, false);
+                            });
+                        } else {
+                            topDiskCont.innerHTML = `<div class="list-item" style="justify-content:center; color:var(--text-muted); font-style:italic;">No Active Disk I/O on ${activeDev}</div>`;
+                        }
+                    }
+                }
+
                 // Multi-Disk Selector & Telemetry Update
                 if (data.disk) {
                     if (data.disk.disks && data.disk.disks.length > 0) {
                         updateDiskSelector(data.disk.disks, data.disk);
                     } else {
+                        updateDiskSelector([], data.disk);
                         document.getElementById('disk-read').textContent = formatSpeed(data.disk.read_rate);
                         document.getElementById('disk-write').textContent = formatSpeed(data.disk.write_rate);
                         diskReadData.push(data.disk.read_rate); diskReadData.shift();
@@ -1624,17 +1730,63 @@
         function onDiskSelect(val) {
             selectedDiskId = val;
             if (val) {
-                localStorage.setItem('rizkyby_selected_disk', val);
+                safeStorage.setItem(`rizkyby_${windowId}_selected_disk`, val);
                 saveConfig({ selected_disk: val });
             }
             if (lastDiskData) {
                 renderSelectedDiskInfo(lastDiskData);
             }
-            // Fetch per-disk detail for right-click view
             if (val && lastDiskData && lastDiskData.disks) {
-                const disk = lastDiskData.disks.find(d => d.id === val);
-                if (disk && disk.dev) fetchDiskDetail(disk.dev);
+                const curD = lastDiskData.disks.find(d => d.id === val);
+                if (curD && curD.detail_text) {
+                    const el = document.getElementById('disk-details');
+                    if (el) el.textContent = curD.detail_text;
+                }
             }
+        }
+
+        function updateDiskSelector(disksList, diskData) {
+            lastDiskData = diskData;
+            const select = document.getElementById('disk-select');
+            const menu = document.getElementById('custom-disk-options');
+            if (!select) return;
+            
+            if (!disksList || disksList.length === 0) {
+                select.innerHTML = '<option value="">No disks found</option>';
+                if (menu) menu.innerHTML = '<div class="custom-disk-option-item">No disks detected</div>';
+                return;
+            }
+
+            const existingIds = Array.from(select.options).map(o => o.value).join(',');
+            const newIds = disksList.map(d => d.id).join(',');
+            
+            if (existingIds !== newIds) {
+                select.innerHTML = disksList.map(d => `<option value="${d.id}">${d.label}${d.is_root ? ' [OS Root]' : ''}</option>`).join('');
+                if (menu) {
+                    menu.innerHTML = disksList.map(d => `
+                        <div class="custom-disk-option-item ${d.id === selectedDiskId ? 'selected' : ''}" onclick="selectCustomDisk('${d.id}')">
+                            ${d.icon} ${d.model} (${d.size})${d.is_root ? ' [OS Root]' : ''}
+                        </div>
+                    `).join('');
+                }
+            }
+            
+            // Priority:
+            // 1. Current selectedDiskId if still connected and valid in disksList
+            // 2. Saved per-window selected_disk if valid in disksList
+            // 3. Adaptive Fallback: Default to OS Root drive or first available disk
+            const savedDisk = safeStorage.getItem(`rizkyby_${windowId}_selected_disk`) || safeStorage.getItem('rizkyby_selected_disk');
+            if (!selectedDiskId || !disksList.some(d => d.id === selectedDiskId)) {
+                if (savedDisk && disksList.some(d => d.id === savedDisk)) {
+                    selectedDiskId = savedDisk;
+                } else {
+                    const rootDisk = disksList.find(d => d.is_root) || disksList[0];
+                    selectedDiskId = rootDisk ? rootDisk.id : disksList[0].id;
+                }
+            }
+            select.value = selectedDiskId;
+
+            renderSelectedDiskInfo(diskData);
         }
 
         function toggleDiskMenu(e) {
@@ -1709,7 +1861,7 @@
                 const rect = box.getBoundingClientRect();
                 menu.style.position = 'fixed';
                 menu.style.top = (rect.bottom + 6) + 'px';
-                menu.style.left = rect.left + 'px';
+                menu.style.left = Math.max(10, Math.min(window.innerWidth - 220, rect.left)) + 'px';
                 menu.style.zIndex = '999999';
                 menu.classList.add('show');
             }
@@ -1724,19 +1876,6 @@
             setPalette(key);
         }
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const windowId = urlParams.get('win') || '1';
-
-        async function saveConfig(obj) {
-            try {
-                await fetch('/api/config', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ window_id: windowId, settings: obj })
-                });
-            } catch(e) {}
-        }
-
         function setPalette(key) {
             const palettes = getActivePalettes();
             let targetKey = key;
@@ -1745,10 +1884,10 @@
             }
             currentPalette = targetKey;
             if (currentThemeMode === 'light') {
-                localStorage.setItem(`rizkyby_${windowId}_palette_light`, targetKey);
+                safeStorage.setItem(`rizkyby_${windowId}_palette_light`, targetKey);
                 saveConfig({ mode: currentThemeMode, palette_light: targetKey });
             } else {
-                localStorage.setItem(`rizkyby_${windowId}_palette_dark`, targetKey);
+                safeStorage.setItem(`rizkyby_${windowId}_palette_dark`, targetKey);
                 saveConfig({ mode: currentThemeMode, palette_dark: targetKey });
             }
             const pal = palettes[targetKey];
@@ -1795,51 +1934,61 @@
             initColorSelector();
 
             // Dynamic Chart dataset colors update
-            if (cpuChart && cpuChart.data && cpuChart.data.datasets[0]) {
-                cpuChart.data.datasets[0].borderColor = pal.blue;
-                cpuChart.data.datasets[0].backgroundColor = pal.blue + '22';
-                cpuChart.update();
-            }
-            if (gpuChart && gpuChart.data && gpuChart.data.datasets.length >= 4) {
-                gpuChart.data.datasets[0].borderColor = pal.purple;
-                gpuChart.data.datasets[1].borderColor = pal.blue;
-                gpuChart.data.datasets[2].borderColor = pal.cyan;
-                gpuChart.data.datasets[3].borderColor = pal.orange;
-                gpuChart.update();
-            }
-            if (memChart && memChart.data && memChart.data.datasets.length >= 3) {
-                memChart.data.datasets[0].borderColor = pal.green;
-                memChart.data.datasets[1].borderColor = pal.orange;
-                memChart.data.datasets[2].borderColor = pal.red;
-                memChart.update();
-            }
-            if (netChart && netChart.data && netChart.data.datasets.length >= 2) {
-                netChart.data.datasets[0].borderColor = pal.cyan;
-                netChart.data.datasets[1].borderColor = pal.blue;
-                netChart.update();
-            }
-            if (diskChart && diskChart.data && diskChart.data.datasets.length >= 2) {
-                diskChart.data.datasets[0].borderColor = pal.orange;
-                diskChart.data.datasets[1].borderColor = pal.red;
-                diskChart.update();
-            }
+            try {
+                if (cpuChart && cpuChart.data && cpuChart.data.datasets[0]) {
+                    cpuChart.data.datasets[0].borderColor = pal.blue;
+                    cpuChart.data.datasets[0].backgroundColor = pal.blue + '22';
+                    cpuChart.update();
+                }
+            } catch(e) {}
+            try {
+                if (gpuChart && gpuChart.data && gpuChart.data.datasets.length >= 4) {
+                    gpuChart.data.datasets[0].borderColor = pal.purple;
+                    gpuChart.data.datasets[1].borderColor = pal.blue;
+                    gpuChart.data.datasets[2].borderColor = pal.cyan;
+                    gpuChart.data.datasets[3].borderColor = pal.orange;
+                    gpuChart.update();
+                }
+            } catch(e) {}
+            try {
+                if (memChart && memChart.data && memChart.data.datasets.length >= 3) {
+                    memChart.data.datasets[0].borderColor = pal.green;
+                    memChart.data.datasets[1].borderColor = pal.orange;
+                    memChart.data.datasets[2].borderColor = pal.red;
+                    memChart.update();
+                }
+            } catch(e) {}
+            try {
+                if (netChart && netChart.data && netChart.data.datasets.length >= 2) {
+                    netChart.data.datasets[0].borderColor = pal.cyan;
+                    netChart.data.datasets[1].borderColor = pal.blue;
+                    netChart.update();
+                }
+            } catch(e) {}
+            try {
+                if (diskChart && diskChart.data && diskChart.data.datasets.length >= 2) {
+                    diskChart.data.datasets[0].borderColor = pal.orange;
+                    diskChart.data.datasets[1].borderColor = pal.red;
+                    diskChart.update();
+                }
+            } catch(e) {}
         }
 
         function setThemeMode(mode, targetPaletteKey) {
             currentThemeMode = mode;
-            localStorage.setItem(`rizkyby_${windowId}_mode`, mode);
+            safeStorage.setItem(`rizkyby_${windowId}_mode`, mode);
 
             let palKey = targetPaletteKey;
             if (!palKey) {
                 if (mode === 'light') {
-                    palKey = localStorage.getItem(`rizkyby_${windowId}_palette_light`) || 'breeze';
+                    palKey = safeStorage.getItem(`rizkyby_${windowId}_palette_light`) || 'breeze';
                 } else {
-                    palKey = localStorage.getItem(`rizkyby_${windowId}_palette_dark`) || 'cyberpunk';
+                    palKey = safeStorage.getItem(`rizkyby_${windowId}_palette_dark`) || 'cyberpunk';
                 }
             }
 
-            const darkPal = mode === 'dark' ? palKey : (localStorage.getItem(`rizkyby_${windowId}_palette_dark`) || 'cyberpunk');
-            const lightPal = mode === 'light' ? palKey : (localStorage.getItem(`rizkyby_${windowId}_palette_light`) || 'breeze');
+            const darkPal = mode === 'dark' ? palKey : (safeStorage.getItem(`rizkyby_${windowId}_palette_dark`) || 'cyberpunk');
+            const lightPal = mode === 'light' ? palKey : (safeStorage.getItem(`rizkyby_${windowId}_palette_light`) || 'breeze');
 
             saveConfig({
                 mode: mode,
@@ -1854,17 +2003,27 @@
             if (mode === 'light') {
                 if (btnDark) btnDark.classList.remove('active');
                 if (btnLight) btnLight.classList.add('active');
+                root.style.setProperty('--bg-color', '#f1f5f9');
+                root.style.setProperty('--glass-bg', 'rgba(255, 255, 255, 0.75)');
+                root.style.setProperty('--card-bg', 'rgba(255, 255, 255, 0.85)');
                 root.style.setProperty('--text-main', '#0f172a');
                 root.style.setProperty('--text-muted', '#475569');
                 root.style.setProperty('--glass-border', 'rgba(0, 0, 0, 0.15)');
                 root.style.setProperty('--header-line', 'rgba(0, 0, 0, 0.1)');
+                root.style.setProperty('--core-bg', 'rgba(0, 0, 0, 0.05)');
+                root.style.setProperty('--list-bg', 'rgba(0, 0, 0, 0.04)');
             } else {
                 if (btnLight) btnLight.classList.remove('active');
                 if (btnDark) btnDark.classList.add('active');
+                root.style.setProperty('--bg-color', '#090d16');
+                root.style.setProperty('--glass-bg', 'rgba(15, 23, 42, 0.75)');
+                root.style.setProperty('--card-bg', 'rgba(15, 23, 42, 0.85)');
                 root.style.setProperty('--text-main', '#f8fafc');
                 root.style.setProperty('--text-muted', '#94a3b8');
                 root.style.setProperty('--glass-border', 'rgba(255, 255, 255, 0.12)');
                 root.style.setProperty('--header-line', 'rgba(255, 255, 255, 0.08)');
+                root.style.setProperty('--core-bg', 'rgba(255, 255, 255, 0.03)');
+                root.style.setProperty('--list-bg', 'rgba(255, 255, 255, 0.03)');
             }
 
             // Update Chart grid lines and scale ticks for legibility in mode!
@@ -1908,6 +2067,12 @@
             const menu = document.getElementById('custom-disk-options');
             if (!select) return;
             
+            if (!disksList || disksList.length === 0) {
+                select.innerHTML = '<option value="">No disks found</option>';
+                if (menu) menu.innerHTML = '<div class="custom-disk-option-item">No disks detected</div>';
+                return;
+            }
+
             const existingIds = Array.from(select.options).map(o => o.value).join(',');
             const newIds = disksList.map(d => d.id).join(',');
             
@@ -1922,7 +2087,7 @@
                 }
             }
             
-            const savedDisk = localStorage.getItem('rizkyby_selected_disk');
+            const savedDisk = safeStorage.getItem('rizkyby_selected_disk');
             if (!selectedDiskId && savedDisk && disksList.some(d => d.id === savedDisk)) {
                 selectedDiskId = savedDisk;
             }
@@ -1936,6 +2101,15 @@
 
         function renderSelectedDiskInfo(diskData) {
             const disksList = diskData.disks || [];
+            if (!disksList || disksList.length === 0) {
+                const nameEl = document.getElementById('selected-disk-name');
+                if (nameEl) nameEl.textContent = 'No storage device detected';
+                const s1 = document.getElementById('val-stat-1'); if (s1) s1.textContent = 'N/A';
+                const s2 = document.getElementById('val-stat-2'); if (s2) s2.textContent = 'N/A';
+                const s3 = document.getElementById('val-stat-3'); if (s3) s3.textContent = 'N/A';
+                const s4 = document.getElementById('val-stat-4'); if (s4) s4.textContent = 'N/A';
+                return;
+            }
             const disk = disksList.find(d => d.id === selectedDiskId) || disksList[0];
             if (!disk) return;
 
@@ -1981,6 +2155,7 @@
             }
             
             // Dynamic Row Labels tailored to Drive Category
+            const transportStr = (disk.transport || (disk.is_ssd ? (disk.id.includes('nvme') ? 'NVMe' : 'USB/SATA') : 'USB')).toUpperCase();
             if (disk.is_ssd) {
                 document.getElementById('label-stat-1').textContent = 'TBW Used (Total Writes)';
                 document.getElementById('val-stat-1').textContent = disk.tbw_str;
@@ -1992,7 +2167,7 @@
                 document.getElementById('val-stat-1').textContent = disk.tbw_str;
                 
                 document.getElementById('label-stat-2').textContent = 'Transport Interface';
-                document.getElementById('val-stat-2').textContent = disk.transport.toUpperCase() + ' Bus Interface';
+                document.getElementById('val-stat-2').textContent = transportStr + ' Bus Interface';
             } else {
                 // USB Flash Drive / SD Card
                 document.getElementById('label-stat-1').textContent = 'Flash Storage Protocol';
@@ -2004,11 +2179,19 @@
             
             // Row 3: Drive Type & Transport
             document.getElementById('label-stat-3').textContent = 'Drive Type & Transport';
-            document.getElementById('val-stat-3').textContent = `${disk.type} (${disk.transport.toUpperCase()})`;
+            document.getElementById('val-stat-3').textContent = `${disk.type} (${transportStr})`;
             
             // Row 4: SMART Health / Temp
             document.getElementById('label-stat-4').textContent = 'SMART Health / Temp';
             document.getElementById('val-stat-4').textContent = `${disk.health_str} | ${disk.temp_str}`;
+
+            // Row 5: Drive Capacity & Node
+            const stat5El = document.getElementById('val-stat-5');
+            if (stat5El) stat5El.textContent = disk.capacity_str || `${disk.size} (/dev/${disk.dev})`;
+
+            // Row 6: Partition Used & Free Space
+            const stat6El = document.getElementById('val-stat-6');
+            if (stat6El) stat6El.textContent = disk.usage_str || 'Raw Block Storage';
             
             // Build rich English hover tooltip for Disk Card
             let tooltipLines = `<strong>💽 Connected Storage Hierarchy (${disksList.length} Disks):</strong><br>`;
@@ -2210,10 +2393,6 @@
             }
         }, { passive: true });
 
-</script>
-
-        <script>
-
         function showCardToast(targetEl, msg) {
             let toast = document.getElementById('floating-toast');
             if (!toast) {
@@ -2244,10 +2423,43 @@
             
             toast.style.left = centerX + 'px';
             toast.style.top = centerY + 'px';
+            toast.style.transform = 'translate(-50%, -50%)';
+            toast.style.fontSize = 'clamp(0.72rem, 0.9vw, 0.85rem)';
+            toast.style.padding = '0.4rem 0.9rem';
             
             toast.textContent = msg;
             toast.classList.add('show');
             setTimeout(() => { toast.classList.remove('show'); }, 2000);
+        }
+
+        function showCenterToast(msg) {
+            let toast = document.getElementById('center-screen-toast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'center-screen-toast';
+                toast.className = 'card-toast';
+                document.body.appendChild(toast);
+            }
+            
+            const accentColor = getComputedStyle(document.documentElement).getPropertyValue('--accent-blue').trim() || '#3b82f6';
+            toast.style.backgroundColor = accentColor;
+            toast.style.position = 'fixed';
+            toast.style.left = '50%';
+            toast.style.top = '50%';
+            toast.style.transform = 'translate(-50%, -50%)';
+            toast.style.zIndex = '999999';
+            toast.style.fontSize = 'clamp(0.9rem, 1.2vw, 1.15rem)';
+            toast.style.fontWeight = '700';
+            toast.style.padding = '0.8rem 1.8rem';
+            toast.style.borderRadius = '1.2rem';
+            toast.style.boxShadow = '0 12px 35px rgba(0, 0, 0, 0.7), 0 0 30px ' + accentColor;
+            toast.style.pointerEvents = 'none';
+            toast.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
+            
+            toast.textContent = msg;
+            toast.classList.add('show');
+            if (toast._hideTimer) clearTimeout(toast._hideTimer);
+            toast._hideTimer = setTimeout(() => { toast.classList.remove('show'); }, 2200);
         }
 
         async function copyText(targetEl, text, customToastMsg) {
@@ -2288,10 +2500,10 @@
         function saveDetailsState() {
             const activeDetails = [];
             document.querySelectorAll('.card.show-details').forEach(card => {
-                const cardClass = Array.from(card.classList).find(c => c.startsWith('card-'));
+                const cardClass = Array.from(card.classList).find(c => c !== 'card' && c.startsWith('card-'));
                 if (cardClass) activeDetails.push(cardClass);
             });
-            localStorage.setItem('rizkyby_details', activeDetails.join(','));
+            safeStorage.setItem(`rizkyby_${windowId}_details`, activeDetails.join(','));
             saveConfig({ details: activeDetails });
         }
 
@@ -2304,23 +2516,58 @@
         async function quitApp() {
             saveDetailsState();
             try {
-                await fetch('/api/quit', { method: 'POST', body: '{}' });
-            } catch(e) {}
+                await fetch('/api/quit', { 
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ win_count: 1 })
+                });
+                setTimeout(() => { window.close(); }, 300);
+            } catch (e) {
+                setTimeout(() => { window.close(); }, 500);
+            }
         }
 
         async function exitWindow() {
-            saveDetailsState();
             try {
-                await fetch('/api/close_window?win=' + encodeURIComponent(windowId), { method: 'POST' });
-            } catch(e) {}
+                safeStorage.removeItem(`rizkyby_${windowId}_details`);
+                safeStorage.removeItem(`rizkyby_${windowId}_font_size`);
+                safeStorage.removeItem(`rizkyby_${windowId}_fullscreen`);
+                safeStorage.removeItem(`rizkyby_${windowId}_mode`);
+                safeStorage.removeItem(`rizkyby_${windowId}_palette_dark`);
+                safeStorage.removeItem(`rizkyby_${windowId}_palette_light`);
+                await fetch('/api/close_window?win=' + encodeURIComponent(windowId) + '&erase=1', { method: 'POST' });
+                setTimeout(() => { window.close(); }, 200);
+            } catch (e) {
+                setTimeout(() => { window.close(); }, 300);
+            }
         }
 
+        let _isWindowOnTop = false;
         async function toggleAlwaysOnTop() {
             try {
                 const res = await fetch('/api/on_top?win=' + encodeURIComponent(windowId), { method: 'POST' });
                 if (res.ok) {
+                    const data = await res.json();
+                    _isWindowOnTop = data.on_top;
                     const btn = document.getElementById('btn-app-duplicate');
-                    showCardToast(btn, "Toggled Always on Top!");
+                    if (btn) {
+                        if (_isWindowOnTop) {
+                            btn.classList.add('pinned');
+                            btn.innerHTML = '📌';
+                            btn.style.color = 'var(--accent-orange)';
+                            btn.style.textShadow = '0 0 10px var(--accent-orange)';
+                        } else {
+                            btn.classList.remove('pinned');
+                            btn.innerHTML = '🗗';
+                            btn.style.color = 'var(--accent-blue)';
+                            btn.style.textShadow = 'none';
+                        }
+                    }
+                    if (_isWindowOnTop) {
+                        showCenterToast('📌 Always On Top: ENABLED (Pinned Above)');
+                    } else {
+                        showCenterToast('🗗 Always On Top: DISABLED (Unpinned)');
+                    }
                 }
             } catch(e) {}
         }
@@ -2396,7 +2643,7 @@
                 }
                 currentZoom = Math.max(8, Math.min(currentZoom, 32));
                 document.documentElement.style.fontSize = currentZoom + 'px';
-                localStorage.setItem(`rizkyby_${windowId}_font_size`, currentZoom);
+                safeStorage.setItem(`rizkyby_${windowId}_font_size`, currentZoom);
                 saveConfig({ font_size: currentZoom });
             }
         }, { passive: false });
@@ -2435,25 +2682,37 @@
                 duplicateWindow();
                 return;
             }
-            if (e.key === 'Escape') {
-                document.querySelectorAll('.card.show-details').forEach(c => c.classList.remove('show-details'));
-                saveDetailsState();
-            }
         });
 
         // Fullscreen & Right-Click Details Logic
         const overlay = document.getElementById('fs-overlay');
-        document.querySelectorAll('.card').forEach(card => {
-            card.addEventListener('contextmenu', (e) => {
+
+        function toggleCardDetails(card, e) {
+            if (e) {
                 if (e.target && e.target.closest('.disk-selector-wrapper, #disk-select, .disk-select-dropdown, #custom-disk-select, #custom-color-select, #custom-color-options, .mode-toggle-group, #btn-app-quit, #btn-app-duplicate')) {
                     return;
                 }
                 e.preventDefault();
-                card.classList.toggle('show-details');
-                saveDetailsState();
-                const detailsEl = card.querySelector('.card-inner-details');
-                if (detailsEl) detailsEl.dataset.scrolling = "";
-                setTimeout(applyAutoScroll, 50);
+                e.stopPropagation();
+            }
+            const now = Date.now();
+            if (card._lastToggle && (now - card._lastToggle < 200)) return;
+            card._lastToggle = now;
+
+            card.classList.toggle('show-details');
+            saveDetailsState();
+            const detailsEl = card.querySelector('.card-inner-details');
+            if (detailsEl) detailsEl.dataset.scrolling = "";
+            setTimeout(applyAutoScroll, 50);
+        }
+
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('contextmenu', (e) => toggleCardDetails(card, e));
+            card.addEventListener('mouseup', (e) => {
+                if (e.button === 2) toggleCardDetails(card, e);
+            });
+            card.addEventListener('auxclick', (e) => {
+                if (e.button === 2) toggleCardDetails(card, e);
             });
             
             card.addEventListener('click', (e) => {
@@ -2475,12 +2734,12 @@
                     overlay.classList.add('active');
                     const cardClass = Array.from(card.classList).find(c => c.startsWith('card-'));
                     if (cardClass) {
-                        localStorage.setItem(`rizkyby_${windowId}_fullscreen`, cardClass);
+                        safeStorage.setItem(`rizkyby_${windowId}_fullscreen`, cardClass);
                         saveConfig({ fullscreen: cardClass });
                     }
                 } else {
                     overlay.classList.remove('active');
-                    localStorage.setItem(`rizkyby_${windowId}_fullscreen`, '');
+                    safeStorage.setItem(`rizkyby_${windowId}_fullscreen`, '');
                     saveConfig({ fullscreen: '' });
                 }
                 setTimeout(() => {
@@ -2492,7 +2751,7 @@
         overlay.addEventListener('click', () => {
             document.querySelectorAll('.card.fullscreen').forEach(c => c.classList.remove('fullscreen'));
             overlay.classList.remove('active');
-            localStorage.setItem(`rizkyby_${windowId}_fullscreen`, '');
+            safeStorage.setItem(`rizkyby_${windowId}_fullscreen`, '');
             saveConfig({ fullscreen: '' });
         });
         
@@ -2557,45 +2816,59 @@
                 if (res.ok) cfg = await res.json();
             } catch(e) {}
 
-            // Restore right-click details mode per card
-            let activeDetails = [];
-            if (cfg.details && Array.isArray(cfg.details)) {
-                activeDetails = cfg.details;
-            } else if (localStorage.getItem('rizkyby_details')) {
-                activeDetails = localStorage.getItem('rizkyby_details').split(',');
+            // Restore Always-On-Top pinned state per window
+            const winState = (cfg.per_window_settings && cfg.per_window_settings[windowId]) ? cfg.per_window_settings[windowId] : cfg;
+            if (winState && winState.on_top) {
+                _isWindowOnTop = true;
+                const btn = document.getElementById('btn-app-duplicate');
+                if (btn) {
+                    btn.classList.add('pinned');
+                    btn.innerHTML = '📌';
+                    btn.style.color = 'var(--accent-orange)';
+                    btn.style.textShadow = '0 0 10px var(--accent-orange)';
+                    btn.title = '📌 Always On Top: ENABLED (PINNED) | Left-Click: Duplicate | Right-Click: Unpin Window';
+                }
             }
 
+            // Restore right-click details mode per card
+            let activeDetails = [];
+            if (winState && winState.details && Array.isArray(winState.details) && winState.details.length > 0) {
+                activeDetails = winState.details;
+            } else if (safeStorage.getItem(`rizkyby_${windowId}_details`)) {
+                const s = safeStorage.getItem(`rizkyby_${windowId}_details`);
+                if (s && s.trim()) activeDetails = s.split(',');
+            }
+
+            document.querySelectorAll('.card').forEach(c => c.classList.remove('show-details'));
             if (activeDetails && activeDetails.length > 0) {
                 activeDetails.forEach(cls => {
-                    if (cls.trim()) {
+                    if (cls && cls.trim()) {
                         const targetCard = document.querySelector('.' + cls.trim());
                         if (targetCard) {
                             targetCard.classList.add('show-details');
                         }
                     }
                 });
-            } else {
-                document.querySelectorAll('.card').forEach(c => c.classList.remove('show-details'));
             }
 
             // Restore font zoom size
-            const savedZoom = cfg.font_size || localStorage.getItem(`rizkyby_${windowId}_font_size`) || localStorage.getItem('rizkyby_font_size');
+            const savedZoom = cfg.font_size || safeStorage.getItem(`rizkyby_${windowId}_font_size`) || safeStorage.getItem('rizkyby_font_size');
             if (savedZoom) {
                 currentZoom = parseInt(savedZoom, 10);
                 document.documentElement.style.fontSize = currentZoom + 'px';
             }
 
             // Restore Theme Mode (Dark/Light) and its saved per-mode palette
-            if (cfg.palette_dark) localStorage.setItem(`rizkyby_${windowId}_palette_dark`, cfg.palette_dark);
-            if (cfg.palette_light) localStorage.setItem(`rizkyby_${windowId}_palette_light`, cfg.palette_light);
-            const savedMode = cfg.mode || localStorage.getItem(`rizkyby_${windowId}_mode`) || 'dark';
+            if (cfg.palette_dark) safeStorage.setItem(`rizkyby_${windowId}_palette_dark`, cfg.palette_dark);
+            if (cfg.palette_light) safeStorage.setItem(`rizkyby_${windowId}_palette_light`, cfg.palette_light);
+            const savedMode = cfg.mode || safeStorage.getItem(`rizkyby_${windowId}_mode`) || 'dark';
             const activePalette = savedMode === 'light'
-                ? (cfg.palette_light || localStorage.getItem(`rizkyby_${windowId}_palette_light`) || 'breeze')
-                : (cfg.palette_dark || localStorage.getItem(`rizkyby_${windowId}_palette_dark`) || 'cyberpunk');
+                ? (cfg.palette_light || safeStorage.getItem(`rizkyby_${windowId}_palette_light`) || 'breeze')
+                : (cfg.palette_dark || safeStorage.getItem(`rizkyby_${windowId}_palette_dark`) || 'cyberpunk');
             setThemeMode(savedMode, activePalette);
 
             // Restore Fullscreen Card Mode
-            const savedFsCard = cfg.fullscreen || localStorage.getItem(`rizkyby_${windowId}_fullscreen`) || localStorage.getItem('rizkyby_fullscreen');
+            const savedFsCard = cfg.fullscreen || safeStorage.getItem(`rizkyby_${windowId}_fullscreen`) || safeStorage.getItem('rizkyby_fullscreen');
             if (savedFsCard) {
                 setTimeout(() => {
                     const targetCard = document.querySelector('.' + savedFsCard);
@@ -2612,6 +2885,45 @@
 
         // Auto restore user's last saved state on launch
         restoreSavedState();
+
+        function setupButtonListeners() {
+            const quitBtn = document.getElementById('btn-app-quit');
+            if (quitBtn) {
+                quitBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    quitApp();
+                });
+                quitBtn.addEventListener('contextmenu', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    exitWindow();
+                    return false;
+                });
+            }
+
+            const btnDark = document.getElementById('btn-mode-dark');
+            if (btnDark) {
+                btnDark.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    setThemeMode('dark');
+                });
+            }
+
+            const btnLight = document.getElementById('btn-mode-light');
+            if (btnLight) {
+                btnLight.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    setThemeMode('light');
+                });
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setupButtonListeners);
+        } else {
+            setupButtonListeners();
+        }
 </script>
 </body>
 

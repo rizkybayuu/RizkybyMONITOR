@@ -1,4 +1,33 @@
-# Python cache & virtualenv
+# =============================================================================
+# RizkybyMONITOR .gitignore
+# =============================================================================
+
+# ---- Compiled Binaries (ignored — users build via make / CMake) ----
+rizkybymonitor_linux
+rizkybymonitor_windows.exe
+
+# Old binary name (pre-v1.0)
+rizkybymonitor
+
+# Windows build intermediate files
+*.obj
+*.pdb
+*.exp
+*.ilk
+
+# Linux/Unix build intermediate files
+*.o
+*.a
+*.so
+
+# ---- User Runtime Config (local window positions & preferences) ----
+# This is auto-generated per machine — do NOT commit
+config.json
+
+# ---- Legacy / Unused Directories ----
+.unused/
+
+# ---- Python Legacy (pre-v1.0 migration artifacts) ----
 __pycache__/
 *.pyc
 *.pyo
@@ -6,15 +35,22 @@ venv/
 .venv/
 env/
 
-# Backup & local temporary files
+# ---- WebView2 Build Artifacts ----
+packages/
+vcpkg_installed/
+webview2_data/
+
+# ---- CMake Build Directories ----
+build/
+cmake-build-*/
+
+# ---- Backup & Temporary Files ----
 *.bak
 *.swp
 *~
 
-# User runtime configuration (contains local window positions and preferences)
-config.json
-
-# IDE / OS metadata
+# ---- IDE / OS Metadata ----
 .DS_Store
 .idea/
 .vscode/
+Thumbs.db
