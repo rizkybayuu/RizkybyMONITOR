@@ -2,12 +2,13 @@
 # RizkybyMONITOR .gitignore
 # =============================================================================
 
-# ---- Compiled Binaries (ignored — users build via make / CMake) ----
+# ---- Compiled Binaries ----
 rizkybymonitor_linux
 rizkybymonitor_windows.exe
-
-# Old binary name (pre-v1.0)
 rizkybymonitor
+rzkmon_sensor.exe
+sensor/
+tools/
 
 # Windows build intermediate files
 *.obj
@@ -20,14 +21,19 @@ rizkybymonitor
 *.a
 *.so
 
-# ---- User Runtime Config (local window positions & preferences) ----
-# This is auto-generated per machine — do NOT commit
+# ---- User Runtime Config ----
 config.json
 
-# ---- Legacy / Unused Directories ----
+# ---- Legacy / Unused Directories & Files ----
 .unused/
+Makefile.txt
 
-# ---- Python Legacy (pre-v1.0 migration artifacts) ----
+# ---- Documentation / Notes drafts ----
+Pengembangan*.txt
+*.docx
+.~lock.*
+
+# ---- Python Legacy ----
 __pycache__/
 *.pyc
 *.pyo
@@ -45,7 +51,7 @@ build/
 cmake-build-*/
 
 # ---- Backup & Temporary Files ----
-*.bak
+*.bak*
 *.swp
 *~
 
