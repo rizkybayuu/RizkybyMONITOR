@@ -149,7 +149,7 @@ chmod +x build_linux.sh
 4. **Resolve each missing dependency automatically**, trying up to 5 candidate package names per dependency (package names differ across distros/releases — e.g. `libwebkit2gtk-4.1-dev` vs `webkit2gtk4.1-devel` vs `webkit2gtk-4.1`), with the real error reason (no internet, disk full, wrong sudo password, package not found, dependency conflict, or locked package manager) surfaced from the raw package-manager log instead of a generic failure message.
 5. If anything still fails to install, **print copy-pasteable manual install commands** for your specific package manager and exit cleanly — no silent half-broken builds.
 6. **Configure passwordless `smartctl` access** once, via a dedicated `/etc/sudoers.d/rizkybymonitor_smartctl` rule scoped only to the `smartctl` binary path(s) (never a blanket `NOPASSWD: ALL`), so SMART/TBW disk telemetry works without a password prompt on every refresh.
-7. **Compile** `main_linux.cpp` (or `src/main_linux.cpp`) with `g++`/`clang++ -std=c++17 -O2 -pthread`, linking against whichever of `webkit2gtk-4.0` / `webkit2gtk-4.1` `pkg-config` resolves, streaming the full compiler log on failure.
+7. **Compile** `src/main_linux.cpp` (or `main_linux.cpp`) with `g++`/`clang++ -std=c++17 -O2 -pthread`, linking against whichever of `webkit2gtk-4.0` / `webkit2gtk-4.1` `pkg-config` resolves, streaming the full compiler log on failure.
 
 To run the application:
 ```bash
@@ -183,7 +183,7 @@ rizkybymonitor_windows.exe
    - As a last resort, **auto-downloads the latest portable `w64devkit`** release straight from its GitHub Releases API into `tools\w64devkit`
 5. **Detect or install the .NET SDK** (via `winget`/`choco`/`scoop`) and, if available, **publish the CPU sensor helper** (`sensor\rzkmon_sensor.exe`, built on LibreHardwareMonitorLib) for MSR-level CPU package temperature — the app still runs fine without it, just with CPU temp reported as N/A.
 6. **Locate or download the Microsoft WebView2 SDK** — checking the local NuGet package cache, a local `packages\` folder, `vcpkg` installs on any active drive, and finally downloading it fresh via `nuget.exe`/NuGet API if none are found.
-7. **Compile** `main_windows.cpp` — using `cl.exe` (linked against `ws2_32`, `iphlpapi`, `pdh`, `psapi`, `powrprof`, `dxgi`, `ole32`, `oleaut32`, `uuid`, `shlwapi`, `setupapi`, `rpcrt4`, `WebView2LoaderStatic`) when MSVC was found, or a fully static MinGW/Clang build (`-static -static-libgcc -static-libstdc++`, plus `wlanapi`, `shell32`, `wbemuuid`, `dwmapi`, `WebView2Loader.dll.lib`) otherwise — then copies `WebView2Loader.dll` next to the output binary.
+7. **Compile** `src/main_windows.cpp` (or `main_windows.cpp`) — using `cl.exe` (linked against `ws2_32`, `iphlpapi`, `pdh`, `psapi`, `powrprof`, `dxgi`, `ole32`, `oleaut32`, `uuid`, `shlwapi`, `setupapi`, `rpcrt4`, `WebView2LoaderStatic`) when MSVC was found, or a fully static MinGW/Clang build (`-static -static-libgcc -static-libstdc++`, plus `wlanapi`, `shell32`, `wbemuuid`, `dwmapi`, `WebView2Loader.dll.lib`) otherwise — then copies `WebView2Loader.dll` next to the output binary.
 
 > **Note**: `rizkybymonitor_windows.exe` and `index.html` must reside in the same folder.
 > `WebView2Loader.dll` is copied alongside the executable automatically by the build script.
@@ -196,14 +196,15 @@ rizkybymonitor_windows.exe
 RizkybyMONITOR/
 ├── build_linux.sh          # Linux 1-click multi-distro dependency resolver & compiler
 ├── build_windows.bat       # Windows 1-click compiler scanner, SDK fetcher & build script
-├── main_linux.cpp          # Linux backend: C++17 daemon, GTK3, sysfs/procfs telemetry
-├── main_windows.cpp        # Windows backend: Win32, WebView2, ETW, WMI, IOCTL
 ├── index.html              # Shared dashboard UI (WebKit2GTK / WebView2)
-├── README.md                # Project documentation
-├── LICENSE                  # MIT License
-├── .gitignore                # Git exclusion rules
-└── assets/
-    └── overview.webm         # Hero overview demonstration video
+├── README.md               # Project documentation
+├── LICENSE                 # MIT License
+├── .gitignore              # Git exclusion rules
+├── assets/
+│   └── overview.mp4        # Hero overview demonstration video
+└── src/
+    ├── main_linux.cpp      # Linux backend: C++17 daemon, GTK3, sysfs/procfs telemetry
+    └── main_windows.cpp    # Windows backend: Win32, WebView2, ETW, WMI, IOCTL
 ```
 
 Generated at build time (not tracked in source control):
