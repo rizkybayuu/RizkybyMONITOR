@@ -7,7 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 <div align="center">
-  <video src="assets/overview.webm" width="100%" controls autoplay loop muted></video>
+  <video src="assets/overview.mp4" width="100%" controls autoplay loop muted></video>
   <p><em>RizkybyMONITOR v1.1 Live Telemetry & Multi-Window Showcase</em></p>
 </div>
 
