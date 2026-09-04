@@ -6,10 +6,7 @@
 [![Linux Distros](https://img.shields.io/badge/linux-10%2B%20distro%20families-333333.svg)](#-linux-1-click-autonomous-builder)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-<div align="center">
-  <video src="assets/overview.mp4" width="100%" controls autoplay loop muted></video>
-  <p><em>RizkybyMONITOR v1.1 Live Telemetry & Multi-Window Showcase</em></p>
-</div>
+https://github.com/user-attachments/assets/60072469-1e95-41e1-89f1-4d564b85b6c1
 
 ---
 
