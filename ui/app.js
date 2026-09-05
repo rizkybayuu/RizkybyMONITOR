@@ -2555,6 +2555,10 @@
             latencyEls.forEach(el => {
                 el.textContent = `${Math.round(sec * 1000)}ms Non-Blocking Polling (Sub-millisecond Compute)`;
             });
+            const changelogLoopEls = document.querySelectorAll('#changelog-telemetry-interval');
+            changelogLoopEls.forEach(el => {
+                el.textContent = `${Math.round(sec * 1000)}ms`;
+            });
 
             // Restart interval telemetri
             if (g_telemetry_timer) clearInterval(g_telemetry_timer);
@@ -3756,7 +3760,11 @@
                 } else {
                     // MODE: CHANGELOG (Dari Template index.html)
                     const tmpl = document.getElementById('template-changelog');
-                    if (tmpl) container.innerHTML = tmpl.innerHTML;
+                    if (tmpl) {
+                        container.innerHTML = tmpl.innerHTML;
+                        const changelogLoopEl = container.querySelector('#changelog-telemetry-interval');
+                        if (changelogLoopEl) changelogLoopEl.textContent = `${Math.round(g_telemetry_interval_sec * 1000)}ms`;
+                    }
 
                                         // Cek jumlah kartu: Jika >= 4 kartu, ubah alignment ke kanan
                     const wrapper = document.getElementById('changelog-cards-wrapper');
