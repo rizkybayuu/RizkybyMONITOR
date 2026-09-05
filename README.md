@@ -197,7 +197,7 @@ rizkybymonitor_windows.exe
 6. **Locate or download the Microsoft WebView2 SDK** — checking the local NuGet package cache, a local `packages\` folder, `vcpkg` installs on any active drive, and finally downloading it fresh via `nuget.exe`/NuGet API if none are found.
 7. **Compile** `src/main_windows.cpp` (or `main_windows.cpp`) — using `cl.exe` (linked against `ws2_32`, `iphlpapi`, `pdh`, `psapi`, `powrprof`, `dxgi`, `ole32`, `oleaut32`, `uuid`, `shlwapi`, `setupapi`, `rpcrt4`, `WebView2LoaderStatic`) when MSVC was found, or a fully static MinGW/Clang build (`-static -static-libgcc -static-libstdc++`, plus `wlanapi`, `shell32`, `wbemuuid`, `dwmapi`, `WebView2Loader.dll.lib`) otherwise — then copies `WebView2Loader.dll` next to the output binary.
 
-> **Note**: `rizkybymonitor_windows.exe` and `index.html` must reside in the same folder.
+> **Note**: `rizkybymonitor_windows.exe` and the `ui/` folder must reside in the same folder.
 > `WebView2Loader.dll` is copied alongside the executable automatically by the build script.
 
 ---
@@ -215,6 +215,10 @@ RizkybyMONITOR/
 ├── docs/                    # Community & contributor documentation
 │   ├── CODE_OF_CONDUCT.md   # Contributor pledge & standards
 │   └── CONTRIBUTING.md      # Developer guide, build steps & workflow
+├── ui/                      # Modular frontend dashboard UI
+│   ├── index.html          # Clean HTML5 structure & layout
+│   ├── style.css           # Styling, themes, animations & glassmorphism
+│   └── app.js              # Real-time telemetry, charts & UI controller
 ├── assets/
 │   └── overview.mp4        # Hero overview demonstration video
 ├── src/
@@ -222,7 +226,6 @@ RizkybyMONITOR/
 │   └── main_windows.cpp    # Windows backend: Win32, WebView2, ETW, WMI, IOCTL
 ├── build_linux.sh          # Linux 1-click multi-distro dependency resolver & compiler
 ├── build_windows.bat       # Windows 1-click compiler scanner, SDK fetcher & build script
-├── index.html              # Shared dashboard UI (WebKit2GTK / WebView2)
 ├── README.md               # Project documentation
 ├── LICENSE                 # MIT License
 └── .gitignore              # Git exclusion rules

@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RizkybyMONITOR</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app-window">
+        <div id="fs-overlay"></div>
+        <div class="custom-color-options-menu" id="custom-color-options" style="-webkit-app-region: no-drag !important;"></div>
+
+        <header>
+            <div class="header-title">
+                <div class="auto-scroll-x" style="overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none; -webkit-app-region: no-drag !important;">
+                    <h1 id="header-app-title" data-tooltip="header" style="cursor: default; user-select: none; -webkit-user-select: none; -webkit-app-region: no-drag !important; caret-color: var(--accent-cyan);">RizkybyMONITOR</h1>
+                </div>
+            </div>
+            <div class="sensors-badge-wrapper auto-scroll-x" id="sensors-badge-scroll-wrapper">
+                <div class="sensors-badge" id="header-sensors-badge">
+                    <!-- Color Selector (Replicating Disk Selector format) -->
+                    <div class="custom-color-select-box" id="custom-color-select" onclick="toggleColorMenu(event)" data-tooltip="color_select" style="-webkit-app-region: no-drag !important; cursor: pointer;">
+                        <div class="auto-scroll-x" id="custom-color-label" style="max-width: 130px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; -ms-overflow-style: none; -webkit-app-region: no-drag !important;">
+                            <span id="color-label-text" style="-webkit-app-region: no-drag !important;">🎨 Neon Cyberpunk</span>
+                        </div>
+                        <span style="font-size: 0.6rem; margin-left: 2px; -webkit-app-region: no-drag !important;">▼</span>
+                    </div>
+
+                    <!-- Light / Dark Mode Toggle Buttons -->
+                    <div class="mode-toggle-group" data-tooltip="mode_toggle" style="-webkit-app-region: no-drag;">
+                        <button id="btn-mode-dark" class="mode-btn active">🌙</button>
+                        <button id="btn-mode-light" class="mode-btn">☀️</button>
+                    </div>
+
+                    <div class="sensor-item" data-tooltip="temperature"><span style="color:var(--accent-red)">🌡️</span> <span id="temp-val">0°C</span></div>
+                    <div class="sensor-item" data-tooltip="battery"><span style="color:var(--accent-green)">🔋</span> <span id="batt-val">100%</span></div>
+
+                    <!-- Tombol Autoscroll Mandiri (Klik Kiri: Cycle Char ▶ ⏸ ■ | Klik Kanan: Muncul Popup Interval) -->
+                    <button id="btn-autoscroll-toggle" class="mode-btn" onclick="cycleAutoscrollMode()" oncontextmenu="openTelemetryIntervalPopup(event); return false;" data-tooltip="autoscroll_ctrl" style="font-weight: 700; font-size: 0.95rem; color: var(--accent-blue); -webkit-app-region: no-drag; cursor: pointer; min-width: 2.2rem; height: 2.2rem; display: inline-flex; align-items: center; justify-content: center;">▶</button>
+
+                    <button id="btn-app-duplicate" class="mode-btn" onclick="duplicateWindow()" oncontextmenu="toggleAlwaysOnTop(); return false;" data-tooltip="duplicate" style="font-weight: 700; font-size: 1.05rem; color: var(--accent-blue); -webkit-app-region: no-drag;">🗗</button>
+                    <button id="btn-app-quit" class="mode-btn" onclick="quitApp()" oncontextmenu="exitWindow(); return false;" data-tooltip="quit" style="font-weight: 700; font-size: 1.05rem; color: var(--accent-blue); -webkit-app-region: no-drag; cursor: pointer;">⏻</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Floating Popup Telemetry Rate (Tooltip Theme, Smooth Fade, Adaptive Glow) -->
+        <div id="telemetry-interval-popup" style="display: none; position: fixed; z-index: 999999; padding: 10px 14px; border-radius: 8px; flex-direction: column; gap: 8px; font-size: 0.82rem; -webkit-app-region: no-drag;">
+            <div style="font-weight: 600; font-size: 0.76rem; color: var(--accent-blue); display: flex; justify-content: space-between; align-items: center; gap: 14px;">
+                <span>⏱️ Telemetry Refresh Rate</span>
+                <span id="interval-display-ms" style="color: var(--text-muted); font-size: 0.72rem; font-family: monospace;">1000ms</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <input id="input-telemetry-interval" type="text" value="1.0s" title="Type interval or scroll mouse wheel" style="width: 68px; height: 1.85rem; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 6px; padding: 0 4px; color: var(--text-color); font-size: 0.85rem; font-weight: 700; text-align: center; outline: none; cursor: ns-resize;" onkeydown="if(event.key==='Enter') applyTelemetryInterval();">
+                <button class="mode-btn" onclick="stepInterval(1)" title="Increase interval" style="width: 1.85rem; height: 1.85rem; padding: 0; border: 1px solid var(--glass-border); border-radius: 6px; font-size: 0.75rem; display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">▲</button>
+                <button class="mode-btn" onclick="stepInterval(-1)" title="Decrease interval" style="width: 1.85rem; height: 1.85rem; padding: 0; border: 1px solid var(--glass-border); border-radius: 6px; font-size: 0.75rem; display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">▼</button>
+                <button class="mode-btn" onclick="applyTelemetryInterval()" title="Apply changes" style="height: 1.85rem; padding: 0 12px; border: 1px solid var(--accent-blue); background: var(--accent-blue); color: #ffffff; border-radius: 6px; font-size: 0.76rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">Apply</button>
+            </div>
+        </div>
+
+        <!-- Pembungkus Utama Konteks Koordinat 0,0 -->
+        <div class="main-content-area">
+            <div class="dashboard">
+                <!-- CPU Card (Layout 2:1 Horisontal -> Kiri 66.6%: Usage & Processes | Kanan 33.3%: CPU Cores Grid) -->
+                <div class="card card-cpu">
+                    <h2 style="color: var(--accent-blue); padding-bottom: 0.8vh; margin-bottom: 0.8vh;">
+                        <span data-tooltip="cpu" style="cursor:pointer;">⚙️ CPU</span>
+                    </h2>
+                    <div class="card-content" style="display:flex !important; flex-direction:row !important; height:100%; gap:0.6rem; overflow:hidden;">
+                        <!-- Area Kiri (2/3 Width = 66.6%): Atas Total Usage + Grafik 2 Line | Bawah Processes -->
+                        <div style="flex: 2 1 66.6%; min-width:0; display:flex; flex-direction:column; gap:0.4vh; height:100%;">
+                            <!-- Atas (50% Height): Total Usage Metric + Canvas Chart -->
+                            <div style="flex: 1 1 50%; min-height:0; display:flex; flex-direction:column; gap:0.2vh;">
+                                <div class="metric" style="flex-shrink:0;">
+                                    <div class="metric-header">
+                                        <span>Total Usage</span>
+                                        <span class="metric-value" id="cpu-total">0%</span>
+                                    </div>
+                                    <div class="progress-bar-bg">
+                                        <div class="progress-bar-fill bg-blue" id="cpu-bar" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                <div class="chart-container" style="flex: 1; min-height: 0; position: relative; margin-top:0.2vh;">
+                                    <canvas id="cpuChart"></canvas>
+                                </div>
+                            </div>
+                            <!-- Bawah (50% Height): Processes -->
+                            <div style="flex: 1 1 50%; min-height:0; display:flex; flex-direction:column; border-top:1px solid rgba(255,255,255,0.06); padding-top:0.3vh; overflow:hidden;">
+                                <div class="metric-header" style="font-weight:600; flex-shrink:0; margin-bottom:0.2vh; color:var(--accent-blue);">Processes:</div>
+                                <div class="list-container" id="top-cpu" style="flex:1; min-height:0; overflow-y:auto; scrollbar-width:none;">
+                                    <!-- Populated via JS -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Area Kanan (1/3 Width = 33.3%): CPU Cores Grid di SEBELAH KANAN secara Horisontal -->
+                        <div style="flex: 1 1 33.33%; min-width:0; display:flex; flex-direction:column; height:100%; border-left:1px solid rgba(255,255,255,0.06); padding-left:0.4rem;">
+                            <div class="metric-header" style="font-weight:600; flex-shrink:0; margin-bottom:0.2vh; color:var(--accent-blue);">CPU Cores:</div>
+                            <div class="cores-wrapper" id="cpu-cores-wrapper" style="flex: 1; min-height: 0; overflow-y:auto; scrollbar-width:none; display:flex; align-items:flex-start;">
+                                <div class="cores-grid" id="cpu-cores" style="width:100%;">
+                                    <!-- Populated via JS -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-inner-details" id="cpu-details">Loading CPU Details...</div>
+                </div>
+
+                <!-- RAM & ZRAM & SWAP (Memory Hierarchy Card: Rasio Kiri 66.6% : Kanan 33.3%) -->
+                <div class="card card-ram">
+                    <h2 style="color: var(--accent-green); padding-bottom: 0.8vh; margin-bottom: 0.8vh;">
+                        <span data-tooltip="ram" style="cursor:pointer;">🧠 Memory Hierarchy</span>
+                    </h2>
+                    <div class="card-content" style="display:flex !important; flex-direction:row !important; height:100%; gap:0.6rem; overflow:hidden;">
+                        <!-- Kiri (2/3 Width = 66.6%): Combined Memory Usage -->
+                        <div style="flex: 2 1 66.6%; min-width:0; display:flex; flex-direction:column; gap:0.4vh; height:100%;">
+                            <!-- Atas (50% Height): Combined Memory Usage & Chart -->
+                            <div style="flex: 1 1 50%; min-height:0; display:flex; flex-direction:column; gap:0.3vh;">
+                                <div class="metric">
+                                    <div class="metric-header">
+                                        <span>Combined Memory Usage</span>
+                                        <span class="metric-value" id="ram-text">0 / 0 GB</span>
+                                    </div>
+                                    <div class="progress-bar-bg">
+                                        <div class="progress-bar-fill bg-green" id="ram-bar" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                <div class="chart-container" style="flex: 1; min-height: 0; position: relative;">
+                                    <canvas id="memChart"></canvas>
+                                </div>
+                            </div>
+                            <!-- Bawah (50% Height): Memory Processes -->
+                            <div style="flex: 1 1 50%; min-height:0; display:flex; flex-direction:column; border-top:1px solid rgba(255,255,255,0.06); padding-top:0.3vh; overflow:hidden;">
+                                <div class="metric-header" style="font-weight:600; flex-shrink:0; margin-bottom:0.2vh; color:var(--accent-green);">Processes:</div>
+                                <div class="list-container" id="top-mem" style="flex:1; min-height:0; overflow-y:auto; scrollbar-width:none;">
+                                    <!-- Populated via JS -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Kanan (1/3 Width = 33.3%): 6 Komponen Memori Font Size Seimbang -->
+                        <div style="flex: 1 1 33.3%; min-width:0; display:flex; flex-direction:column; height:100%; border-left:1px solid rgba(255,255,255,0.06); padding-left:0.4rem; justify-content:space-evenly;">
+                            <!-- 1. CPU Smart Cache -->
+                            <div class="metric" id="mem-row-cache" style="min-width:0; overflow:hidden; opacity:0.35;">
+                                <div class="metric-header" style="margin-bottom:2px; font-size:0.62rem; display:flex; justify-content:space-between; align-items:center;">
+                                    <span class="metric-label" style="font-size:0.62rem;">CPU Smart Cache</span>
+                                    <span class="metric-value" id="mem-val-cache" style="color:var(--accent-blue); font-weight:600; font-size:0.62rem;">Detecting...</span>
+                                </div>
+                                <div class="progress-bar-bg" style="height:0.35vh;"><div class="progress-bar-fill bg-blue" id="mem-bar-cache" style="width:0%;"></div></div>
+                            </div>
+
+                            <!-- 2. Dedicated VRAM (Opacity is 0.35 if 0) -->
+                            <div class="metric" id="mem-row-vram" style="min-width:0; overflow:hidden; opacity:0.35;">
+                                <div class="metric-header" style="margin-bottom:2px; font-size:0.62rem; display:flex; justify-content:space-between; align-items:center;">
+                                    <span class="metric-label" style="font-size:0.62rem;">Dedicated VRAM</span>
+                                    <span class="metric-value" id="mem-val-vram" style="color:var(--accent-purple); font-weight:600; font-size:0.62rem;">Detecting...</span>
+                                </div>
+                                <div class="progress-bar-bg" style="height:0.35vh;"><div class="progress-bar-fill bg-purple" id="mem-bar-vram" style="width:0%;"></div></div>
+                            </div>
+
+                            <!-- 3. Physical RAM -->
+                            <div class="metric" id="mem-row-ram" style="min-width:0; overflow:hidden;">
+                                <div class="metric-header" style="margin-bottom:2px; font-size:0.62rem; display:flex; justify-content:space-between; align-items:center;">
+                                    <span class="metric-label" style="font-size:0.62rem;">Physical RAM</span>
+                                    <span class="metric-value" id="mem-val-ram" style="color:var(--accent-green); font-weight:600; font-size:0.62rem;">Detecting...</span>
+                                </div>
+                                <div class="progress-bar-bg" style="height:0.35vh;"><div class="progress-bar-fill bg-green" id="mem-bar-ram" style="width:0%;"></div></div>
+                            </div>
+
+                            <!-- 4. Shared VRAM (Progress Bar 100% Full) -->
+                            <div class="metric" id="mem-row-shared" style="min-width:0; overflow:hidden;">
+                                <div class="metric-header" style="margin-bottom:2px; font-size:0.62rem; display:flex; justify-content:space-between; align-items:center;">
+                                    <span class="metric-label" style="font-size:0.62rem;">Shared VRAM</span>
+                                    <span class="metric-value" id="mem-val-shared" style="color:var(--accent-cyan); font-weight:600; font-size:0.62rem;">Detecting...</span>
+                                </div>
+                                <div class="progress-bar-bg" style="height:0.35vh;"><div class="progress-bar-fill bg-cyan" id="mem-bar-shared" style="width:0%;"></div></div>
+                            </div>
+
+                            <!-- 5. ZRAM (Compressed RAM) -->
+                            <div class="metric" id="mem-row-zram" style="min-width:0; overflow:hidden;">
+                                <div class="metric-header" style="margin-bottom:2px; font-size:0.62rem; display:flex; justify-content:space-between; align-items:center;">
+                                    <span class="metric-label" style="font-size:0.62rem;">ZRAM (Compressed)</span>
+                                    <span class="metric-value" id="mem-val-zram" style="color:var(--accent-orange); font-weight:600; font-size:0.62rem;">Detecting...</span>
+                                </div>
+                                <div class="progress-bar-bg" style="height:0.35vh;"><div class="progress-bar-fill bg-orange" id="mem-bar-zram" style="width:0%;"></div></div>
+                            </div>
+
+                            <!-- 6. Pagefile / SWAP (Dinamis Sesuai OS) -->
+                            <div class="metric" id="mem-row-swap" style="min-width:0; overflow:hidden; opacity:0.35;">
+                                <div class="metric-header" style="margin-bottom:2px; font-size:0.62rem; display:flex; justify-content:space-between; align-items:center;">
+                                    <span class="metric-label" id="mem-label-swap" style="font-size:0.62rem;">Swap / Pagefile</span>
+                                    <span class="metric-value" id="mem-val-swap" style="color:var(--accent-red); font-weight:600; font-size:0.62rem;">Detecting...</span>
+                                </div>
+                                <div class="progress-bar-bg" style="height:0.35vh;"><div class="progress-bar-fill bg-red" id="mem-bar-swap" style="width:0%;"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-inner-details" id="ram-details">Loading RAM Details...</div>
+                </div>
+
+                <!-- GPU Card (Header Rasio Fix 1:1 | Single Outer Wrapper Membungkus Seluruh Area Kanan) -->
+                <div class="card card-gpu">
+                    <div class="gpu-header-row" style="display:flex; justify-content:space-between; align-items:center; width:100%; border-bottom:1px solid var(--header-line); padding-bottom:0.8vh; margin-bottom:0.8vh; gap:8px; box-sizing:border-box; flex-shrink:0;">
+                        <!-- Header Kiri (50% Fix Width): Judul GPU -->
+                        <div style="width:50%; flex:0 0 50%; min-width:0; overflow-x:auto; scrollbar-width:none;" class="auto-scroll-x">
+                            <h2 style="color: var(--accent-purple); border:none; margin:0; padding:0; white-space:nowrap;">
+                                <span data-tooltip="gpu" style="cursor:pointer;">🎨 GPU</span>
+                            </h2>
+                        </div>
+
+                        <!-- Right Header (50% Fixed Width): Auto-Scrolling Wrapper with Max-Content -->
+                        <div class="gpu-selector-wrapper auto-scroll-x" style="width:50%; flex:0 0 50%; min-width:0; display:flex; align-items:center; overflow-x:auto; scrollbar-width:none; white-space:nowrap;">
+                            <div style="display:flex; align-items:center; gap:4px; margin-left:auto; width:max-content;">
+                                <span class="selector-title" style="color:var(--accent-purple); font-size:0.72rem; font-weight:600; opacity:0.9; flex-shrink:0;">GPU:</span>
+                                <div class="custom-select-box" id="custom-gpu-select" onclick="toggleGpuMenu(event)" onwheel="handleGpuScroll(event)" data-tooltip="gpu_select" style="-webkit-app-region: no-drag !important; cursor:pointer; flex-shrink:0; display:flex; align-items:center; border-radius:9999px; box-sizing:border-box; white-space:nowrap;">
+                                    <span id="gpu-label-text" style="-webkit-app-region: no-drag !important;">🎮 Detecting GPU...</span>
+                                    <span class="select-arrow" style="margin-left:2px; flex-shrink:0; -webkit-app-region: no-drag !important;">▼</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-content" style="display:flex; flex-direction:column; height:100%; gap:0.5vh; overflow:hidden;">
+                        <!-- Sub-Area Atas (50% Height): 4 Progress Bars (Grid 2x2) & Grafik vs Cores Grid (Rasio 2:1) -->
+                        <div style="flex: 1 1 50%; min-height: 0; display:flex; flex-direction:column; gap:0.3vh;">
+                            <!-- 4 Engine Progress Bars Dinamis (Grid 2x2) -->
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:0.4rem; flex-shrink:0;">
+                                <div class="metric" style="min-width:0; overflow:hidden;">
+                                    <div class="metric-header" style="margin-bottom:2px; font-size:0.65rem; display:flex; justify-content:space-between;">
+                                        <span id="gpu-engine-1-name">Detecting...</span>
+                                        <span class="metric-value" id="gpu-rcs-val" style="color:var(--accent-purple);">-%</span>
+                                    </div>
+                                    <div class="progress-bar-bg" style="height:0.4vh;"><div class="progress-bar-fill bg-purple" id="gpu-rcs-bar" style="width:0%;"></div></div>
+                                </div>
+                                <div class="metric" style="min-width:0; overflow:hidden;">
+                                    <div class="metric-header" style="margin-bottom:2px; font-size:0.65rem; display:flex; justify-content:space-between;">
+                                        <span id="gpu-engine-2-name">Detecting...</span>
+                                        <span class="metric-value" id="gpu-bcs-val" style="color:var(--accent-blue);">-%</span>
+                                    </div>
+                                    <div class="progress-bar-bg" style="height:0.4vh;"><div class="progress-bar-fill bg-blue" id="gpu-bcs-bar" style="width:0%;"></div></div>
+                                </div>
+                                <div class="metric" style="min-width:0; overflow:hidden;">
+                                    <div class="metric-header" style="margin-bottom:2px; font-size:0.65rem; display:flex; justify-content:space-between;">
+                                        <span id="gpu-engine-3-name">Detecting...</span>
+                                        <span class="metric-value" id="gpu-vcs-val" style="color:var(--accent-cyan);">-%</span>
+                                    </div>
+                                    <div class="progress-bar-bg" style="height:0.4vh;"><div class="progress-bar-fill bg-cyan" id="gpu-vcs-bar" style="width:0%;"></div></div>
+                                </div>
+                                <div class="metric" style="min-width:0; overflow:hidden;">
+                                    <div class="metric-header" style="margin-bottom:2px; font-size:0.65rem; display:flex; justify-content:space-between;">
+                                        <span id="gpu-engine-4-name">Detecting...</span>
+                                        <span class="metric-value" id="gpu-vecs-val" style="color:var(--accent-orange);">-%</span>
+                                    </div>
+                                    <div class="progress-bar-bg" style="height:0.4vh;"><div class="progress-bar-fill bg-orange" id="gpu-vecs-bar" style="width:0%;"></div></div>
+                                </div>
+                            </div>
+
+                            <!-- Sub-Area Grafik & GPU Cores: FIX Rasio 2:1 (Kiri Grafik 66.6% : Kanan GPU Cores 33.3% dengan Auto-Scroll X & Y) -->
+                            <div style="flex: 1; min-height: 0; display:flex !important; flex-direction:row !important; gap:0.4rem; width:100%; overflow:hidden;">
+                                <!-- Kiri (2/3 Width = 66.6% FIX): GPU Line Chart Canvas -->
+                                <div class="chart-container" style="flex: 2 1 66.6% !important; width:66.6% !important; min-width:0; min-height: 0; position: relative; margin-top: 0.3vh; height: calc(100% - 0.3vh) !important;">
+                                    <canvas id="gpuChart"></canvas>
+                                </div>
+
+                                <!-- Right (1/3 Width = 33.3% Fixed): GPU Cores Grid Container (X & Y autoscroll if card size is narrow) -->
+                                <div id="egpu-cores-container" style="flex: 1 1 33.3% !important; width:33.3% !important; min-width:0; display:flex !important; flex-direction:column !important; border-left:1px solid rgba(255,255,255,0.06); padding-left:0.4rem; overflow:hidden;">
+                                    <div class="metric-header" style="font-weight:600; flex-shrink:0; margin-bottom:0.2vh; color:var(--accent-purple); font-size:0.68rem;">GPU Cores:</div>
+                                    <div class="cores-wrapper auto-scroll-x auto-scroll-y" style="flex: 1; min-height: 0; overflow:auto; scrollbar-width:none; display:flex; align-items:flex-start;">
+                                        <div class="cores-grid" id="egpu-cores" style="width:100%; min-width:max-content; grid-template-columns: repeat(auto-fit, minmax(4rem, 1fr)); gap:0.3rem;">
+                                            <!-- Dynamic Cores (Dimensi Persis CPU Cores) -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bagian 2 (Bawah - 50%): Processes Header + List -->
+                        <div style="flex: 1 1 50%; min-height: 0; display:flex; flex-direction:column; border-top:1px solid rgba(255,255,255,0.06); padding-top:0.3vh; overflow:hidden;">
+                            <div class="metric-header" style="font-weight:600; flex-shrink:0; margin-bottom:0.2vh; color:var(--accent-purple);">Processes:</div>
+                            <div class="list-container" id="top-gpu" style="flex:1; min-height:0; overflow-y:auto; scrollbar-width:none;">
+                                <!-- Populated via JS -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-inner-details" id="gpu-details">Loading GPU Details...</div>
+                </div>
+
+                <!-- Network -->
+                <div class="card card-net">
+                    <h2 style="color: var(--accent-cyan); border-bottom: 1px solid var(--header-line); padding-bottom: 0.8vh; margin-bottom: 0.8vh;">
+                        <span data-tooltip="network" style="cursor:pointer;">🌐 Network I/O</span>
+                    </h2>
+                    <div class="card-content" style="display:flex; flex-direction:column; height:100%; gap:0.5vh; overflow:hidden;">
+                        <div style="flex: 1 1 50%; min-height: 0; display:flex; flex-direction:column; justify-content:space-between;">
+                            <div style="display:flex; justify-content:space-between; width:100%;">
+                                <div class="metric" style="width:48%;">
+                                    <div class="metric-header" style="justify-content: flex-start; gap: 4px;">
+                                        <span style="color:var(--accent-cyan); font-size:0.6rem;">▼</span>
+                                        <span class="metric-value" id="net-rx" style="font-weight: 700 !important; color: var(--accent-cyan);">0 KB/s</span>
+                                    </div>
+                                </div>
+                                <div class="metric" style="width:48%;">
+                                    <div class="metric-header" style="justify-content: flex-end; gap: 4px;">
+                                        <span style="color:var(--accent-blue); font-size:0.6rem;">▲</span>
+                                        <span class="metric-value" id="net-tx" style="font-weight: 700 !important; color: var(--accent-blue);">0 KB/s</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="chart-container" style="flex:1; min-height:0; width:100%; position:relative; margin-top:0.3vh;">
+                                <canvas id="netChart"></canvas>
+                            </div>
+                        </div>
+                        <div style="flex: 1 1 50%; min-height: 0; display:flex; flex-direction:column; overflow:hidden; border-top:1px solid rgba(255,255,255,0.06); padding-top:0.4vh;">
+                            <div class="metric-header" style="font-weight:600; flex-shrink:0; margin-bottom:0.3vh; color:var(--accent-cyan);">Processes:</div>
+                            <div class="list-container" id="top-net" style="flex:1; min-height:0; overflow-y:auto; scrollbar-width:none;">
+                                <!-- Populated via JS -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-inner-details" id="net-details">Loading Network Details...</div>
+                </div>
+
+                <!-- Disk Card (Header Rasio Fix 1:1 | Single Outer Wrapper Membungkus Seluruh Area Kanan) -->
+                <div class="card card-disk">
+                    <div class="disk-header-row" style="display:flex; justify-content:space-between; align-items:center; width:100%; border-bottom: 1px solid var(--header-line); padding-bottom: 0.8vh; margin-bottom: 0.8vh; gap: 8px; box-sizing: border-box; flex-shrink: 0;">
+                        <!-- Header Kiri (50% Fix Width): Judul Disk -->
+                        <div style="width: 50%; flex:0 0 50%; min-width: 0; overflow-x: auto; scrollbar-width: none;" class="auto-scroll-x">
+                            <h2 style="color: var(--accent-orange); border:none; margin:0; padding:0; white-space: nowrap; font-size: clamp(0.85rem, 1.05vw, 1.15rem); width: max-content;">
+                                <span data-tooltip="ssd" style="cursor:pointer;">💽 Disk I/O &amp; Storage</span>
+                            </h2>
+                        </div>
+
+                        <!-- Right Header (50% Fix Width): Auto-Scroll Active Wrapper with Max-Content -->
+                        <div class="disk-selector-wrapper auto-scroll-x" style="width: 50%; flex:0 0 50%; min-width: 0; display:flex; align-items:center; overflow-x: auto; scrollbar-width: none; white-space: nowrap;">
+                            <div style="display:flex; align-items:center; gap:4px; margin-left:auto; width:max-content;">
+                                <span class="selector-title" style="color:var(--accent-orange); font-size:0.72rem; font-weight:600; opacity:0.9; flex-shrink: 0;">Disk:</span>
+                                <div class="custom-select-box" id="custom-disk-select" onclick="toggleDiskMenu(event)" onwheel="handleDiskScroll(event)" data-tooltip="disk_select" style="-webkit-app-region: no-drag !important; cursor:pointer; flex-shrink:0; display:flex; align-items:center; border-radius:9999px; box-sizing:border-box; white-space:nowrap;">
+                                    <span id="disk-label-text" style="-webkit-app-region: no-drag !important;">💽 Detecting Storage...</span>
+                                    <span class="select-arrow" style="margin-left:2px; flex-shrink:0; -webkit-app-region: no-drag !important;">▼</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="split-2-1">
+                        <div class="card-content" style="display:flex; flex-direction:column; height:100%; gap:0.5vh; overflow:hidden;">
+                            <!-- Top 50%: R/W Metrics & Disk Chart -->
+                            <div style="flex: 1 1 50%; min-height: 0; display:flex; flex-direction:column; justify-content:space-between;">
+                                <div style="display:flex; justify-content:space-between; width:100%;">
+                                    <div class="metric" style="width:48%;">
+                                        <div class="metric-header" style="justify-content: flex-start; gap: 4px;">
+                                            <span style="color:var(--accent-orange); font-size:0.6rem;">R:</span>
+                                            <span class="metric-value" id="disk-read" style="font-weight: 700 !important; color: var(--accent-orange);">0 KB/s</span>
+                                        </div>
+                                    </div>
+                                    <div class="metric" style="width:48%;">
+                                        <div class="metric-header" style="justify-content: flex-end; gap: 4px;">
+                                            <span style="color:var(--accent-red); font-size:0.6rem;">W:</span>
+                                            <span class="metric-value" id="disk-write" style="font-weight: 700 !important; color: var(--accent-red);">0 KB/s</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="chart-container" style="flex:1; min-height:0; width:100%; position:relative; margin-top:0.3vh;">
+                                    <canvas id="diskChart"></canvas>
+                                </div>
+                            </div>
+                            <!-- Bottom 50%: Disk I/O Process List (1:1 Ratio) -->
+                            <div style="flex: 1 1 50%; min-height: 0; display:flex; flex-direction:column; overflow:hidden; border-top:1px solid rgba(255,255,255,0.06); padding-top:0.4vh;">
+                                <div class="metric-header" style="font-weight:600; flex-shrink:0; margin-bottom:0.3vh; color:var(--accent-orange);">Processes:</div>
+                                <div class="list-container" id="top-disk" style="flex:1; min-height:0; overflow-y:auto; scrollbar-width:none;">
+                                    <!-- Populated via JS -->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-content" style="overflow-y: auto; max-height: 100%; height: 100%; display: flex; flex-direction: column; gap: 0.3vh; scrollbar-width: none; -ms-overflow-style: none;">
+                            <div class="metric-header" style="color:var(--accent-orange); font-weight:600; border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:4px; margin-bottom:2px; white-space:normal; word-break:break-word; flex-shrink: 0;" id="selected-disk-name">Detecting Storage...</div>
+
+                            <div class="metric" style="margin-top:0.3vh; flex-shrink: 0;">
+                                <div class="metric-header" style="margin-bottom:0;" id="label-stat-1">Storage Metric 1</div>
+                                <span class="metric-value" style="color:var(--accent-red); white-space:normal; word-break:break-word; font-size:clamp(0.65rem, 0.8vw, 0.8rem);" id="val-stat-1">Detecting...</span>
+                            </div>
+
+                            <div class="metric" style="margin-top:0.3vh; flex-shrink: 0;">
+                                <div class="metric-header" style="margin-bottom:0;" id="label-stat-2">Storage Metric 2</div>
+                                <span class="metric-value" style="color:var(--accent-green); white-space:normal; word-break:break-word; font-size:clamp(0.65rem, 0.8vw, 0.8rem);" id="val-stat-2">Detecting...</span>
+                            </div>
+
+                            <div class="metric" style="margin-top:0.3vh; flex-shrink: 0;">
+                                <div class="metric-header" style="margin-bottom:0;" id="label-stat-3">Drive Type & Transport</div>
+                                <span class="metric-value" style="color:var(--accent-cyan); white-space:normal; word-break:break-word; font-size:clamp(0.65rem, 0.8vw, 0.8rem);" id="val-stat-3">Detecting...</span>
+                            </div>
+
+                            <div class="metric" style="margin-top:0.3vh; flex-shrink: 0;">
+                                <div class="metric-header" style="margin-bottom:0;" id="label-stat-4">SMART Health / Temp</div>
+                                <span class="metric-value" style="color:var(--accent-purple); white-space:normal; word-break:break-word; font-size:clamp(0.65rem, 0.8vw, 0.8rem);" id="val-stat-4">Detecting...</span>
+                            </div>
+
+                            <div class="metric" style="margin-top:0.3vh; flex-shrink: 0;">
+                                <div class="metric-header" style="margin-bottom:0;" id="label-stat-5">Drive Capacity & Node</div>
+                                <span class="metric-value" style="color:var(--accent-blue); white-space:normal; word-break:break-word; font-size:clamp(0.65rem, 0.8vw, 0.8rem);" id="val-stat-5">Detecting...</span>
+                            </div>
+
+                            <div class="metric" style="margin-top:0.3vh; flex-shrink: 0;">
+                                <div class="metric-header" style="margin-bottom:0;" id="label-stat-6">Partition Used & Free Space</div>
+                                <span class="metric-value" style="color:var(--accent-green); white-space:normal; word-break:break-word; font-size:clamp(0.65rem, 0.8vw, 0.8rem);" id="val-stat-6">Detecting Usage...</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-inner-details" id="disk-details">Loading Disk Details...</div>
+                </div>
+            </div>
+
+            <!-- ABOUT / CREDITS PANEL (PURE DYNAMIC) -->
+            <div class="about-panel" id="about-panel">
+                <!-- Screen 1: Hero -->
+                <div class="about-hero-wrap">
+                    <h1 class="about-title-main">RizkybyMONITOR</h1>
+                    <div class="tech-pill-group" id="about-tech-pills"></div>
+                    <div class="about-sub-large">
+                        <span class="about-version-tag">v1.2</span>
+                        <span style="opacity:0.3">•</span>
+                        <span class="about-author-name">Rizky Bayuu</span>
+                    </div>
+                </div>
+
+                <!-- Screen 2: Content (Diisi dinamis atau dikosongkan jika invalid) -->
+                <div class="about-content-wrap" id="about-dynamic-content"></div>
+            </div>
+
+            <!-- CREDIT CLONE (CREDIT FROZEN - SAMA PERSIS DENGAN ORIGINAL) -->
+            <div class="about-panel credit-frozen" id="credit-frozen">
+                <!-- Screen 1: Hero -->
+                <div class="about-hero-wrap">
+                    <h1 class="about-title-main">RizkybyMONITOR Frozen</h1>
+                    <div class="tech-pill-group" id="frozen-tech-pills"></div>
+                    <div class="about-sub-large">
+                        <span class="about-version-tag">v1.2</span>
+                        <span style="opacity:0.3">•</span>
+                        <span class="about-author-name">Rizky Bayuu</span>
+                    </div>
+                </div>
+
+                <!-- Screen 2: Content -->
+                <div class="about-content-wrap" id="frozen-dynamic-content"></div>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="app.js"></script>
+</body>
+
+</html>

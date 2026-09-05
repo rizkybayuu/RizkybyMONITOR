@@ -3964,13 +3964,33 @@ static void handleClient(SOCKET client_fd) {
     std::string content_type = "application/json";
     int status_code = 200;
 
-    if (method == "GET" && (path == "/" || path.rfind("/?", 0) == 0 || path == "/index.html")) {
-        // Serve index.html
-        std::string html = readFile(g_app_dir + "\\index.html");
+    if (method == "GET" && (path == "/" || path.rfind("/?", 0) == 0 || path == "/index.html" || path == "/ui/index.html")) {
+        // Serve index.html from ui/ or root fallback
+        std::string html = readFile(g_app_dir + "\\ui\\index.html");
+        if (html.empty()) html = readFile(g_app_dir + "/ui/index.html");
+        if (html.empty()) html = readFile(g_app_dir + "\\index.html");
         if (html.empty()) html = readFile(g_app_dir + "/index.html");
-        if (html.empty()) html = "<html><body><h1>RizkybyMONITOR - index.html not found</h1></body></html>";
+        if (html.empty()) html = "<html><body><h1>RizkybyMONITOR - ui/index.html not found</h1></body></html>";
         response_body = html;
         content_type = "text/html; charset=utf-8";
+    }
+    else if (method == "GET" && (path == "/style.css" || path == "/ui/style.css")) {
+        // Serve style.css from ui/ or root fallback
+        std::string css = readFile(g_app_dir + "\\ui\\style.css");
+        if (css.empty()) css = readFile(g_app_dir + "/ui/style.css");
+        if (css.empty()) css = readFile(g_app_dir + "\\style.css");
+        if (css.empty()) css = readFile(g_app_dir + "/style.css");
+        response_body = css;
+        content_type = "text/css; charset=utf-8";
+    }
+    else if (method == "GET" && (path == "/app.js" || path == "/ui/app.js")) {
+        // Serve app.js from ui/ or root fallback
+        std::string js = readFile(g_app_dir + "\\ui\\app.js");
+        if (js.empty()) js = readFile(g_app_dir + "/ui/app.js");
+        if (js.empty()) js = readFile(g_app_dir + "\\app.js");
+        if (js.empty()) js = readFile(g_app_dir + "/app.js");
+        response_body = js;
+        content_type = "application/javascript; charset=utf-8";
     }
     else if (method == "GET" && path.rfind("/api/stats", 0) == 0) {
         int win_id = 1;

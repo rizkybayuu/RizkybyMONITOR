@@ -2591,10 +2591,23 @@ static void updateTelemetry() {
         std::string response_headers;
         std::string response_body;
 
-        if (method == "GET" && (path == "/" || path.rfind("/?", 0) == 0 || path == "/index.html")) {
-            std::string html_path = g_app_dir + "/index.html";
+        if (method == "GET" && (path == "/" || path.rfind("/?", 0) == 0 || path == "/index.html" || path == "/ui/index.html")) {
+            std::string html_path = g_app_dir + "/ui/index.html";
             response_body = readFile(html_path);
+            if (response_body.empty()) response_body = readFile(g_app_dir + "/index.html");
             response_headers = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: " + std::to_string(response_body.size()) + "\r\n\r\n";
+        }
+        else if (method == "GET" && (path == "/style.css" || path == "/ui/style.css")) {
+            std::string css_path = g_app_dir + "/ui/style.css";
+            response_body = readFile(css_path);
+            if (response_body.empty()) response_body = readFile(g_app_dir + "/style.css");
+            response_headers = "HTTP/1.1 200 OK\r\nContent-Type: text/css; charset=utf-8\r\nContent-Length: " + std::to_string(response_body.size()) + "\r\n\r\n";
+        }
+        else if (method == "GET" && (path == "/app.js" || path == "/ui/app.js")) {
+            std::string js_path = g_app_dir + "/ui/app.js";
+            response_body = readFile(js_path);
+            if (response_body.empty()) response_body = readFile(g_app_dir + "/app.js");
+            response_headers = "HTTP/1.1 200 OK\r\nContent-Type: application/javascript; charset=utf-8\r\nContent-Length: " + std::to_string(response_body.size()) + "\r\n\r\n";
         }
         else if (method == "GET" && (path == "/api/stats" || path.rfind("/api/stats", 0) == 0)) {
             {

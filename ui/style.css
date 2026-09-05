@@ -1,0 +1,1814 @@
+        :root {
+            --window-radius: 1.5rem; /* 1.5rem = 24px saat font 16px, dan dinamis ikut zoom
+            --bg-color: #0f172a;
+            /* Opacity disamakan 50% untuk semua mode */
+            --card-radius: 1.2rem;   /* Radius sudut card, dinamis ikut zoom */
+            --card-bg: rgba(0, 0, 0, 0.50);
+            --card-hover-bg: rgba(0, 0, 0, 0.50);
+            --glass-bg: rgba(0, 0, 0, 0.50);
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --card-shadow: 0 4px 30px rgba(0, 0, 0, 0.35);
+            --card-shadow-hover: 0 0 32px rgba(255, 255, 255, 0.25), inset 0 0 15px rgba(255, 255, 255, 0.1);
+            --card-border-hover: rgba(255, 255, 255, 0.45);
+            --progress-bg: rgba(255, 255, 255, 0.05);
+            --core-bg: rgba(255, 255, 255, 0.03);
+            --core-border: rgba(255, 255, 255, 0.05);
+            --list-bg: rgba(255, 255, 255, 0.03);
+            --header-line: rgba(255, 255, 255, 0.05);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-blue: #3b82f6;
+            --accent-purple: #8b5cf6;
+            --accent-green: #10b981;
+            --accent-orange: #f59e0b;
+            --accent-red: #ef4444;
+            --accent-cyan: #06b6d4;
+            --bg-color: black;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            scrollbar-width: none !important;
+            -ms-overflow-style: none !important;
+        }
+
+        ::-webkit-scrollbar {
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
+            background: transparent !important;
+        }
+
+        html, body {
+            background: transparent !important;
+            background-color: transparent !important;
+            background-image: none !important;
+            overflow: hidden !important;
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        body {
+            user-select: text;
+            font-family: 'Outfit', sans-serif;
+            color: var(--text-main);
+        }
+
+        #app-window {
+            width: 100vw;
+            height: 100vh;
+            border-radius: var(--window-radius);
+            overflow: hidden;
+            transform: translateZ(0);
+            background-color: var(--bg-color);
+            background-image: linear-gradient(135deg, var(--bg-color) 0%, rgba(30, 41, 59, 0.9) 100%);
+			/* background: transparent !important; */
+            background-size: 100% 100% !important;
+            background-position: center center !important;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            box-sizing: border-box;
+        }
+
+        .mode-btn {
+            transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease;
+        }
+
+        *, *:focus, *:active, *:focus-visible {
+            outline: none !important;
+            -webkit-tap-highlight-color: transparent !important;
+        }
+
+        button:focus, button:active, button:focus-visible,
+        .mode-btn:focus, .mode-btn:active, .mode-btn:focus-visible,
+        .sensor-item:focus, .sensor-item:active,
+        .custom-color-select-box:focus, .custom-color-select-box:active {
+            outline: none !important;
+            box-shadow: none;
+            -webkit-appearance: none;
+        }
+
+header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;     /* Mengunci posisi vertikal Y tepat di tengah */
+            height: auto;            /* Tinggi otomatis menyesuaikan skala isi header */
+            min-height: max-content;
+            flex-shrink: 0;
+            gap: 8px;
+            padding: 2px 2px 0 2px;
+            margin: 0;
+            user-select: none;
+        }
+
+        .header-title {
+            flex: 1;
+            min-width: 0;
+            height: 2.2rem;             /* Disamakan persis dengan tinggi 2.2rem tombol sensor */
+            max-height: 2.6rem;
+            overflow: hidden !important; /* Kunci mutlak agar tidak ada pergeseran vertikal */
+            white-space: nowrap;
+            -webkit-app-region: drag;
+            padding-left: 6px;
+            display: flex;
+            align-items: center;        /* Centering teks judul */
+            user-select: none;
+        }
+
+        .header-title .auto-scroll-x {
+            height: 100%;
+            overflow-y: hidden !important; /* Pastikan hanya scroll horizontal jika teks kepanjangan */
+            display: flex;
+            align-items: center;        /* Centering teks judul saat autoscroll */
+        }
+
+        .header-title h1 {
+            display: inline-block;
+            white-space: nowrap;
+            font-weight: 800;
+            font-size: 1.6rem;
+            background: linear-gradient(to right, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1.1;
+            margin: 0;
+            padding: 0 4px; /* Memberi ruang nafas kecil di sekeliling teks */
+        }
+        
+        .header-title p {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+        
+        .sensors-badge-wrapper {
+            flex: 2;
+            min-width: 0;
+            display: flex;
+            align-items: center;     /* Rata tengah sejajar judul */
+            overflow-x: auto;
+            white-space: nowrap;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            -webkit-app-region: no-drag !important;
+            margin-left: auto;
+            width: 100%;
+        }
+
+        .sensors-badge-wrapper::-webkit-scrollbar {
+            display: none;
+        }
+
+        .sensors-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+            width: max-content;
+            flex-shrink: 0;
+            margin-left: auto;
+        }
+
+        .sensor-item {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            padding: 0 0.8rem;
+            height: 2.2rem;
+            min-height: 2.2rem;
+            box-sizing: border-box;
+            border-radius: 1.5rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+            font-size: 0.92rem;
+            align-self: center;
+            flex-shrink: 0;
+        }
+
+        .custom-color-select-box {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 2.2rem;
+            min-height: 2.2rem;
+            box-sizing: border-box;
+            gap: 0.35rem;
+            background: var(--glass-bg);
+            border: 1px solid var(--accent-purple);
+            color: var(--accent-purple);
+            border-radius: 1.5rem;
+            padding: 0 0.8rem;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            overflow: visible !important;
+            position: relative;
+            user-select: none;
+            z-index: 999;
+            align-self: center;
+            flex-shrink: 0;
+            -webkit-app-region: no-drag !important;
+        }
+
+        .mode-toggle-group {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 2.2rem;
+            min-height: 2.2rem;
+            box-sizing: border-box;
+            gap: 0.15rem;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 1.5rem;
+            padding: 0.12rem 0.25rem;
+            align-self: center;
+            flex-shrink: 0;
+            overflow: visible !important;
+            position: relative;
+            z-index: 100;
+        }
+        .mode-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1rem;
+            padding: 0 0.55rem;
+            height: 1.9rem;
+            border-radius: 1.2rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            align-self: center;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 1;
+        }
+        .mode-btn:hover {
+            color: var(--text-main);
+            transform: scale(1.1);
+        }
+        .mode-btn.active {
+            background: var(--accent-purple);
+            color: #ffffff;
+            box-shadow: 0 0 12px var(--accent-purple), 0 0 22px var(--accent-purple);
+            position: relative;
+            z-index: 10;
+        }
+
+        .dashboard {
+            flex: 1 1 auto; /* Mengambil sisa ruang di bawah header secara proporsional */
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 8px;
+            min-height: 0;
+            margin: 0;
+            padding: 0;
+            overflow: visible !important; /* Mencegah bingkai dashboard memotong glow yang keluar dari area kartu */
+        }
+
+        /* 1. Animasi Masuk: Muncul dari bawah (Y: 28px) bergerak NAIK ke posisi normal (Y: 0) */
+        @keyframes cardsMoveUpIn {
+            0% {
+                opacity: 0;
+                transform: translateY(28px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 2. Animasi Keluar: Dari posisi normal (Y: 0) bergerak NAIK ke atas (Y: -28px) lalu hilang */
+        @keyframes cardsMoveUpOut {
+            0% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-28px);
+            }
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 1.2rem;
+            padding: 0.8rem 1rem;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: filter 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+            transform: translateZ(0);
+            contain: none !important;
+            will-change: transform, opacity;
+            /* ANIMASI DEFAULT DIHAPUS DARI SINI */
+        }
+
+        /* HANYA berjalan saat toggle klik kanan beralih kembali ke dashboard */
+        .dashboard.cards-animate-in .card:not(.fullscreen) {
+            animation: cardsMoveUpIn 0.4s ease-out forwards;
+        }
+
+        /* State ketika card disembunyikan lewat toggle klik kanan */
+        .dashboard.cards-hidden .card:not(.fullscreen) {
+            animation: cardsMoveUpOut 0.35s ease-in forwards;
+            pointer-events: none;
+        }
+
+        /* Optimasi Bayangan Ringan & Cepat Khusus Light Mode */
+        html[data-mode="light"] .card,
+        body[data-mode="light"] .card {
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05) !important;
+        }
+        html[data-mode="light"] .card:hover,
+        body[data-mode="light"] .card:hover {
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        /* Efek Hover Default (Dark Mode): Brightness Latar Bertambah (Warna Latar Lebih Terang/Transparan) */
+        .card:hover {
+            /* Menggunakan background yang lebih terang dibanding var(--card-bg) */
+            background-color: rgba(255, 255, 255, 0.12) !important;
+            box-shadow: var(--card-shadow-hover);
+            border-color: var(--card-border-hover);
+            opacity: 1 !important;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        /* Efek Hover Khusus Light Mode: Brightness Latar Berkurang (Warna Latar Lebih Gelap/Pekat) */
+        html[data-mode="light"] .card:hover,
+        body[data-mode="light"] .card:hover {
+            /* Menggunakan latar hitam transparan tipis agar sedikit lebih gelap */
+            background-color: rgba(0, 0, 0, 0.08) !important;
+        }
+
+        /* Clean Frosted Cards with Theme Tint */
+        .card-cpu, .card-ram, .card-gpu, .card-net, .card-ssd, .card-battery {
+            box-shadow: var(--card-shadow);
+        }
+
+        /* Card Fullscreen: Z-Index di atas Overlay (99999) & Netralkan Transform agar Tidak Tenggelam */
+        .card.fullscreen {
+            position: fixed !important;
+            top: 12px !important;
+            left: 12px !important;
+            right: 12px !important;
+            bottom: 12px !important;
+            width: auto !important;
+            height: auto !important;
+            box-sizing: border-box !important;
+            border-radius: var(--card-radius, 1.2rem) !important;
+            overflow: hidden !important;
+            z-index: 99999 !important;
+            transform: none !important;
+            animation: none !important;
+            background: var(--card-bg) !important;
+            backdrop-filter: blur(16px) !important;
+            -webkit-backdrop-filter: blur(16px) !important;
+            box-shadow: var(--card-shadow) !important;
+            border: 1px solid var(--glass-border) !important;
+            transition: all 0.25s ease-in-out !important;
+            padding: 14px !important;
+            color: var(--text-main) !important;
+            -webkit-mask-image: none !important;
+            mask-image: none !important;
+        }
+
+        /* Pastikan Dashboard Tidak Mengunci Stacking Context saat ada Card Fullscreen */
+        body:has(.card.fullscreen) .dashboard {
+            transform: none !important;
+        }
+
+        .card.fullscreen h2 {
+            font-size: 1.8rem !important;
+        }
+
+        .card.fullscreen .cores-grid {
+            grid-template-columns: repeat(auto-fit, minmax(5rem, 1fr)) !important;
+            gap: 0.6rem !important;
+            max-height: none !important;
+        }
+
+        .card.fullscreen .core-box {
+            min-height: 2.8rem !important;
+            padding: 0.35rem 0.2rem !important;
+        }
+
+        .card.fullscreen .core-name {
+            font-size: 0.85rem !important;
+        }
+
+        .card.fullscreen .core-val {
+            font-size: 1.1rem !important;
+        }
+
+        .card.fullscreen .core-freq {
+            font-size: 0.8rem !important;
+        }
+
+        .card.fullscreen .metric-header {
+            font-size: 0.95rem !important;
+        }
+
+        .card.fullscreen .metric-label {
+            font-size: 0.95rem !important;
+        }
+
+        .card.fullscreen .metric-value {
+            font-size: 1.05rem !important;
+        }
+
+        .card.fullscreen .list-item {
+            font-size: 1.05rem !important;
+            padding: 0.5rem 0.8rem !important;
+        }
+
+        /* Scale Up Fullscreen: Label GPU: / Disk: serta Pil Selector */
+        .card.fullscreen .gpu-selector-wrapper,
+        .card.fullscreen .disk-selector-wrapper {
+            gap: 0.8rem !important;
+        }
+
+        .card.fullscreen .gpu-selector-wrapper span.selector-title,
+        .card.fullscreen .disk-selector-wrapper span.selector-title {
+            font-size: 1.25rem !important;
+            font-weight: 700 !important;
+        }
+
+        .card.fullscreen .custom-select-box {
+            font-size: 1.25rem !important;
+            padding: 0.45rem 1.2rem !important;
+            gap: 0.6rem !important;
+            border-radius: 9999px !important;
+        }
+
+        .card.fullscreen .custom-select-box span {
+            font-size: 1.25rem !important;
+        }
+
+        .card.fullscreen .custom-select-box span.select-arrow {
+            font-size: 0.95rem !important;
+        }
+
+        /* Scaled Menu Options saat Fullscreen Aktif */
+        body:has(.card.fullscreen) .custom-options-menu,
+        body:has(.card.fullscreen) .custom-color-options-menu {
+            min-width: 260px !important;
+            padding: 8px !important;
+            border-radius: 14px !important;
+        }
+
+        body:has(.card.fullscreen) .custom-option-item,
+        body:has(.card.fullscreen) .custom-color-option-item {
+            font-size: 1.15rem !important;
+            padding: 10px 16px !important;
+            gap: 10px !important;
+            border-radius: 10px !important;
+        }
+
+        /* Scaled Metric Values khusus Disk Side-Panel saat Fullscreen */
+        .card.fullscreen #selected-disk-name {
+            font-size: 1.35rem !important;
+        }
+
+        .card.fullscreen [id^="label-stat-"] {
+            font-size: 1.05rem !important;
+        }
+
+        .card.fullscreen [id^="val-stat-"] {
+            font-size: 1.15rem !important;
+        }
+
+        /* OVERLAY DI BELAKANG FULLSCREEN (DISAMAKAN UNTUK DARK & LIGHT MODE) */
+        #fs-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            border-radius: var(--window-radius) !important;
+            overflow: hidden !important;
+            z-index: 9998;
+            background: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: auto;
+        }
+        #fs-overlay.active {
+            display: block;
+            opacity: 1;
+        }
+
+        /* Light Mode Overlay (Disamakan dengan tingkat kegelapan/keburaman yang presisi agar warna card tidak berubah saat fullscreen) */
+        html[data-mode="light"] #fs-overlay,
+        body[data-mode="light"] #fs-overlay {
+            background: rgba(0, 0, 0, 0.15) !important;
+        }
+
+        /* Scale Up Tooltip & Floating Toast saat Mode Fullscreen Zoom Aktif */
+        body:has(.card.fullscreen) #globalTooltip {
+            font-size: clamp(1.05rem, 1.25vw, 1.35rem) !important;
+            padding: 2vh 2vw !important;
+            border-radius: 12px !important;
+            max-width: 45vw !important;
+            line-height: 1.6 !important;
+        }
+
+        body:has(.card.fullscreen) .card-toast {
+            font-size: clamp(1rem, 1.2vw, 1.25rem) !important;
+            padding: 0.7rem 1.4rem !important;
+            border-radius: 10px !important;
+        }
+
+        .card h2 {
+            font-size: clamp(0.85rem, 1.1vw, 1.15rem);
+            margin-bottom: 1vh;
+            display: flex;
+            align-items: center;
+            gap: 0.5vw;
+            border-bottom: 1px solid var(--header-line);
+            padding-bottom: 1vh;
+            flex-shrink: 0;
+            position: relative;
+            cursor: pointer;
+            width: 100%;
+            white-space: nowrap;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .card h2::-webkit-scrollbar { display: none; }
+
+        /* Override garis pembatas header untuk SEMUA card di Light Mode */
+        html[data-mode="light"] .card h2,
+        html[data-mode="light"] .gpu-header-row,
+        html[data-mode="light"] .disk-header-row {
+            border-bottom-color: rgba(0, 0, 0, 0.15) !important;
+        }
+
+        /* Garis pembatas panel kanan & pemisah proses di dalam card */
+        html[data-mode="light"] .card div[style*="border-top:1px solid"],
+        html[data-mode="light"] .card div[style*="border-top: 1px solid"] {
+            border-top-color: rgba(0, 0, 0, 0.08) !important;
+        }
+        html[data-mode="light"] .card div[style*="border-left:1px solid"],
+        html[data-mode="light"] .card div[style*="border-left: 1px solid"] {
+            border-left-color: rgba(0, 0, 0, 0.08) !important;
+        }
+        html[data-mode="light"] #selected-disk-name {
+            border-bottom-color: rgba(0, 0, 0, 0.1) !important;
+        }
+
+        /* Global tooltips handled in JS */
+
+        .card-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            min-height: 0;
+        }
+
+        .metric {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: clamp(0.7rem, 0.9vw, 0.85rem);
+            margin-bottom: 0.5vh;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            gap: 0.5rem;
+            white-space: nowrap;
+            width: 100%;
+            color: var(--text-main);
+        }
+        .metric-header::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .metric-header span {
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .metric-value {
+            font-weight: 700;
+            font-size: clamp(0.75rem, 1vw, 0.9rem);
+            white-space: nowrap;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            display: inline-block;
+        }
+        .metric-value::-webkit-scrollbar {
+            display: none;
+        }
+
+        .auto-scroll-x {
+            overflow-x: auto;
+            white-space: nowrap;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        .auto-scroll-x::-webkit-scrollbar {
+            display: none;
+        }
+
+        .progress-bar-bg {
+            background: var(--progress-bg);
+            border-radius: 10px;
+            height: 0.8vh;
+            min-height: 4px;
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Kontras empty bar khusus Light Mode agar jalurnya terlihat jelas */
+        html[data-mode="light"] .progress-bar-bg,
+        body[data-mode="light"] .progress-bar-bg {
+            background: rgba(0, 0, 0, 0.08) !important;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease-out;
+            position: relative;
+        }
+
+        .bg-blue { background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan)); }
+        .bg-purple { background: linear-gradient(90deg, var(--accent-purple), var(--accent-blue)); }
+        .bg-green { background: linear-gradient(90deg, var(--accent-green), var(--accent-cyan)); }
+        .bg-orange { background: linear-gradient(90deg, var(--accent-orange), var(--accent-red)); }
+        .bg-red { background: linear-gradient(90deg, var(--accent-red), var(--accent-orange)); }
+        .bg-cyan { background: linear-gradient(90deg, var(--accent-cyan), var(--accent-blue)); }
+
+        /* CPU Cores Grid responsive behavior (Auto-Fit 12x1, 6x2, 4x3, 3x4) */
+        .cores-grid {
+            display: grid;
+            gap: 0.3rem;
+            grid-template-columns: repeat(auto-fit, minmax(4.2rem, 1fr));
+            width: 100%;
+        }
+
+        .core-box {
+            background: var(--core-bg);
+            border: 1px solid var(--core-border);
+            border-radius: 6px;
+            padding: 0.2rem 0.15rem;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            align-items: center;
+            min-height: 2.2rem;
+            flex-shrink: 0;
+        }
+
+        .core-name {
+            font-size: clamp(0.6rem, 0.75vw, 0.75rem);
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .core-val {
+            font-weight: 700;
+            font-size: clamp(0.7rem, 0.9vw, 0.85rem);
+        }
+
+        .core-freq {
+            font-size: clamp(0.55rem, 0.7vw, 0.7rem);
+            color: var(--text-muted);
+        }
+        
+        .list-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            overflow-y: auto;
+        }
+        
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            background: var(--list-bg);
+            color: var(--text-main);
+            padding: 0.3rem 0.5rem;
+            border-radius: 6px;
+            font-size: clamp(0.65rem, 0.85vw, 0.8rem);
+            white-space: nowrap;
+            overflow: hidden;
+            min-height: 1.6rem; /* Prevent squishing */
+            flex-shrink: 0; /* Prevent flex squishing */
+        }
+        
+        .list-name { 
+            color: var(--text-muted); 
+            overflow-x: auto;
+            white-space: nowrap;
+            /* Hide scrollbar for list-name */
+            scrollbar-width: none;
+        }
+        .list-name::-webkit-scrollbar { display: none; }
+        .list-val { font-weight: 600; flex-shrink: 0; padding-left: 5px; }
+        
+        
+        .two-cols {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5vw;
+            height: 100%;
+            flex: 1;
+            min-height: 0;
+            min-width: 0;
+        }
+        
+        .split-2-1 {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5vw;
+            height: 100%;
+            flex: 1;
+            min-height: 0;
+            min-width: 0;
+        }
+        
+        .card-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            overflow-y: auto;
+            min-width: 0;
+            min-height: 0;
+        }
+        
+        .card-cpu { grid-column: span 2; }
+        .card-ram { grid-column: span 2; }
+        .card-gpu { grid-column: span 1; }
+        .card-net { grid-column: span 1; }
+        .card-disk { grid-column: span 2; }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            min-height: 0;
+            margin-top: 1vh;
+        }
+        
+        .chart-container-large {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            min-height: 0;
+        }
+
+        .card-inner-visual {
+            display: contents;
+        }
+        .card-inner-details {
+            display: none;
+            flex: 1;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: clamp(0.7rem, 0.9vw, 0.85rem);
+            color: var(--text-main) !important;
+            white-space: pre-wrap;
+            margin-top: 1vh;
+            padding: 1vh 1vw;
+            line-height: 1.5;
+            min-height: 0;
+            scrollbar-width: none;
+            background: var(--core-bg);
+            border: 1px solid var(--core-border);
+            border-radius: 8px;
+        }
+        /* Show Details Mode: Hide TOTAL of All Old Content */
+        .card.show-details {
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
+        }
+        .card.show-details > :not(h2):not(.disk-header-row):not(.gpu-header-row):not(.card-inner-details),
+        .card.show-details .card-content,
+        .card.show-details .split-2-1 {
+            display: none !important;
+        }
+        /* Kotak Detail Mentok Rapat di Bawah Judul Header */
+        .card.show-details .card-inner-details {
+            display: block !important;
+            flex: 1 1 auto !important;
+            min-height: 0 !important;
+            height: 100% !important;
+            width: 100% !important;
+            margin-top: 0.3rem !important;
+            padding: 0.8rem 1rem !important;
+            box-sizing: border-box !important;
+            overflow-y: auto !important;
+            scrollbar-width: none !important;
+            -ms-overflow-style: none !important;
+            pointer-events: auto !important;
+            user-select: text !important;
+            background: var(--card-bg) !important;
+            color: var(--text-main) !important;
+            border: 1px solid var(--card-border) !important;
+            border-radius: 8px !important;
+            font-size: clamp(0.72rem, 0.85vw, 0.88rem) !important;
+            line-height: 1.55 !important;
+        }
+        .card.show-details .card-inner-details::-webkit-scrollbar {
+            display: none !important;
+        }
+
+        /* Fullscreen Mode: Meeting Details Box at the Top & Hover Effects Remain Active */
+        .card.fullscreen.show-details {
+            padding: 2.5vh 2vw !important;
+        }
+        .card.fullscreen.show-details .card-inner-details {
+            margin-top: 0.4rem !important;
+            padding: 1.2rem 1.5rem !important;
+            font-size: clamp(0.85rem, 1.05vw, 1.15rem) !important;
+            line-height: 1.65 !important;
+            border-radius: 10px !important;
+        }
+
+        /* Hover Effect Remains Active in Fullscreen Mode */
+        .card.fullscreen:hover {
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), var(--card-shadow-hover) !important;
+            border-color: var(--accent-blue) !important;
+        }
+        .card.fullscreen .core-box:hover,
+        .card.fullscreen .list-item:hover,
+        .card.fullscreen .metric:hover {
+            transform: translateY(-2px);
+            transition: transform 0.15s ease;
+        }
+
+        .card-toast {
+            position: fixed;
+            background-color: rgba(16, 185, 129, 0.95);
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            z-index: 10000;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease, -webkit-mask-image 0.6s ease, mask-image 0.6s ease;
+            transform: translate(-50%, -50%);
+            backdrop-filter: blur(8px);
+        }
+        .card-toast.show {
+            opacity: 1;
+        }
+
+        /* GLOW COPY INFO — KONSISTEN ANTAR TEMA (tanpa drop-shadow gelap statis) */
+        /* Dark Mode: teks hitam, glow terang/putih */
+        html[data-mode="dark"] .card-toast,
+        body[data-mode="dark"] .card-toast,
+        .card-toast {
+            color: #000000 !important;
+            box-shadow: 0 0 12px 2px rgba(255, 255, 255, 0.15), 0 0 28px 6px rgba(255, 255, 255, 0.05) !important;
+        }
+
+        /* Light Mode: teks putih, glow gelap/hitam */
+        html[data-mode="light"] .card-toast,
+        body[data-mode="light"] .card-toast {
+            color: #ffffff !important;
+            box-shadow: 0 0 12px 2px rgba(0, 0, 0, 0.15), 0 0 28px 6px rgba(0, 0, 0, 0.05) !important;
+        }
+
+        .disk-select-dropdown {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-color: var(--glass-bg) !important;
+            color: var(--accent-orange) !important;
+            border: 1px solid var(--accent-orange) !important;
+            border-radius: 6px;
+            padding: 3px 22px 3px 8px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            outline: none;
+            cursor: pointer;
+            width: max-content;
+            flex-shrink: 0;
+            background-image: url('data:image/svg+xml;utf8,<svg fill="%23f59e0b" height="16" viewBox="0 0 24 24" width="16" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>') !important;
+            background-repeat: no-repeat !important;
+            background-position: right 4px center !important;
+        }
+        .disk-select-dropdown:hover, .disk-select-dropdown:focus {
+            background-color: var(--card-hover-bg) !important;
+            box-shadow: 0 0 15px rgba(249, 115, 22, 0.35);
+        }
+        .disk-select-dropdown option {
+            background-color: var(--bg-color) !important;
+            color: var(--text-main) !important;
+            padding: 6px;
+        }
+
+        .custom-disk-select-box {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: var(--glass-bg);
+            border: 1px solid var(--accent-orange);
+            color: var(--accent-orange);
+            border-radius: 5px;
+            padding: 2px 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            overflow: hidden;
+            max-width: 100%;
+            min-width: 0;
+            flex-shrink: 0;
+            position: relative;
+            user-select: none;
+        }
+
+        .custom-disk-options-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 4px;
+            background: var(--bg-color);
+            border: 1px solid var(--accent-orange);
+            border-radius: 6px;
+            z-index: 9999;
+            min-width: 190px;
+            max-height: 180px;
+            overflow-y: auto;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.7);
+        }
+        .custom-disk-options-menu.show {
+            display: block;
+        }
+        .custom-disk-option-item {
+            padding: 6px 10px;
+            font-size: 0.75rem;
+            color: var(--text-main);
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .custom-disk-option-item:hover, .custom-disk-option-item.selected {
+            background: rgba(249, 115, 22, 0.25);
+            color: var(--accent-orange);
+            font-weight: bold;
+        }
+
+        .custom-color-select-box {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: var(--glass-bg);
+            border: 1px solid var(--accent-purple);
+            color: var(--accent-purple);
+            border-radius: 30px;
+            padding: 0.4vh 1vw;
+            font-size: clamp(0.75rem, 1.1vw, 0.95rem);
+            font-weight: 600;
+            cursor: pointer;
+            overflow: visible !important;
+            position: relative;
+            user-select: none;
+            z-index: 999;
+        }
+
+        .custom-color-options-menu {
+            display: none;
+            position: fixed;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 6px;
+            z-index: 999999;
+            min-width: 190px;
+            max-height: 250px;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6);
+            -webkit-app-region: no-drag !important;
+            user-select: none;
+            pointer-events: auto;
+        }
+        .custom-color-options-menu.show {
+            display: block !important;
+        }
+        .custom-color-option-item {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: clamp(0.7rem, 0.85vw, 0.85rem);
+            color: var(--text-main);
+            cursor: pointer;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.2s;
+        }
+        .custom-color-option-item:hover, .custom-color-option-item.selected {
+            background: rgba(139, 92, 246, 0.25);
+            color: var(--accent-purple);
+            font-weight: bold;
+        }
+
+        .mode-toggle-group {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px;
+            padding: 2px 4px;
+        }
+        .mode-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            padding: 2px 8px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .mode-btn:hover {
+            color: var(--text-main);
+        }
+        .mode-btn.active {
+            background: var(--accent-purple);
+            color: #ffffff;
+            box-shadow: 0 0 10px var(--accent-purple);
+        }
+
+        /* Custom Selector Boxes for Disk & GPU (Matching Color Select Format) */
+        /* Custom Selector Boxes for Disk & GPU (Matching Color Select Format) */
+        .custom-select-box {
+            display: flex;
+            align-items: center;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2px 8px;
+            font-size: clamp(0.65rem, 0.8vw, 0.8rem);
+            color: var(--text-main);
+            cursor: pointer;
+            user-select: none;
+            transition: border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+            position: relative;
+        }
+        .custom-select-box:hover {
+            background: var(--card-hover-bg);
+        }
+        /* Hover Outline Adaptif Berdasarkan Warna Kartu Masing-Masing */
+        #custom-gpu-select:hover {
+            border-color: var(--accent-purple) !important;
+            box-shadow: 0 0 10px rgba(168, 85, 247, 0.25);
+        }
+        #custom-disk-select:hover {
+            border-color: var(--accent-orange) !important;
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.25);
+        }
+        .custom-options-menu {
+            position: fixed;
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 6px;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6);
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            max-height: 250px;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            scrollbar-width: none;
+            z-index: 9990;
+        }
+        .custom-options-menu.show {
+            display: flex;
+        }
+        .custom-option-item {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: clamp(0.7rem, 0.85vw, 0.85rem);
+            color: var(--text-main);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+            transition: background 0.2s;
+        }
+        .custom-option-item:hover, .custom-option-item.selected {
+            background: rgba(59, 130, 246, 0.25);
+            color: var(--accent-blue);
+            font-weight: bold;
+        }
+
+        /* Disable the Light Mode-specific WebKit backdrop-filter to prevent double text rasterization. */
+        html[data-mode="light"] *:not(#globalTooltip):not(.card):not(.custom-options-menu):not(.custom-color-options-menu),
+        body[data-mode="light"] *:not(#globalTooltip):not(.card):not(.custom-options-menu):not(.custom-color-options-menu) {
+            text-shadow: none !important;
+            filter: none !important;
+            -webkit-font-smoothing: antialiased !important;
+            -moz-osx-font-smoothing: grayscale !important;
+        }
+
+        html[data-mode="light"] .custom-color-options-menu,
+        body[data-mode="light"] .custom-color-options-menu {
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+        }
+
+        /* DEFINISI SIFAT TOOLTIP & PANEL INTERVAL SESUAI TEMA */
+        #globalTooltip, #telemetry-interval-popup {
+            background: var(--card-bg) !important;
+            color: var(--text-main) !important;
+            border: 1px solid var(--glass-border) !important;
+            backdrop-filter: blur(16px) !important;
+            -webkit-backdrop-filter: blur(16px) !important;
+        }
+
+        #globalTooltip {
+            transition: opacity 0.3s ease, box-shadow 0.3s ease, -webkit-mask-image 0.6s ease, mask-image 0.6s ease !important;
+        }
+
+        /* Animasi Fade & Scale Halus untuk Panel Refresh */
+        #telemetry-interval-popup {
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.94);
+            transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease !important;
+        }
+        #telemetry-interval-popup.visible {
+            opacity: 1 !important;
+            pointer-events: auto !important;
+            transform: scale(1) !important;
+        }
+
+        /* 1. Dark Mode: Efek GLOW Lembut & Dalam */
+        html[data-mode="dark"] #globalTooltip,
+        body[data-mode="dark"] #globalTooltip,
+        html[data-mode="dark"] #telemetry-interval-popup,
+        body[data-mode="dark"] #telemetry-interval-popup,
+        #globalTooltip,
+        #telemetry-interval-popup {
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.18), 0 0 40px rgba(255, 255, 255, 0.08), 0 8px 32px rgba(0, 0, 0, 0.6) !important;
+        }
+
+        /* 2. Light Mode: Efek SHADOW Bersih (Tanpa Glow) */
+        html[data-mode="light"] #globalTooltip,
+        body[data-mode="light"] #globalTooltip,
+        html[data-mode="light"] #telemetry-interval-popup,
+        body[data-mode="light"] #telemetry-interval-popup {
+            box-shadow: 0 12px 36px rgba(0, 0, 0, 0.14), 0 4px 12px rgba(0, 0, 0, 0.06) !important;
+        }
+
+		/* EFEK HOVER DARK MODE - CARD BIASA */
+		.card:not(.fullscreen):hover {
+			background: linear-gradient(rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.075)), rgba(0, 0, 0, 0.50) !important;
+			box-shadow: 0 0 32px rgba(255, 255, 255, 0.25), inset 0 0 15px rgba(255, 255, 255, 0.1) !important;
+			border-color: rgba(255, 255, 255, 0.5) !important;
+			backdrop-filter: blur(16px) !important;
+			-webkit-backdrop-filter: blur(16px) !important;
+		}
+
+		/* EFEK HOVER LIGHT MODE - CARD BIASA */
+		html[data-mode="light"] .card:not(.fullscreen):hover,
+		body[data-mode="light"] .card:not(.fullscreen):hover {
+			background: linear-gradient(rgba(0, 0, 0, 0.075), rgba(0, 0, 0, 0.075)), rgba(255, 255, 255, 0.50) !important;
+			box-shadow: 0 10px 35px rgba(0, 0, 0, 0.15), 0 0 20px rgba(0, 0, 0, 0.08) !important;
+			border-color: rgba(0, 0, 0, 0.3) !important;
+			backdrop-filter: blur(16px) !important;
+			-webkit-backdrop-filter: blur(16px) !important;
+		}
+
+		/* EFEK HOVER KHUSUS CARD FULLSCREEN (Blur 8px [0.5x], Opacity Latar 0.375 [-25%]) */
+		.card.fullscreen:hover {
+			background: linear-gradient(rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.075)), rgba(0, 0, 0, 0.375) !important;
+			box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), var(--card-shadow-hover) !important;
+			border-color: var(--accent-blue) !important;
+			backdrop-filter: blur(8px) !important;
+			-webkit-backdrop-filter: blur(8px) !important;
+		}
+
+		/* EFEK HOVER KHUSUS CARD FULLSCREEN - LIGHT MODE */
+		html[data-mode="light"] .card.fullscreen:hover,
+		body[data-mode="light"] .card.fullscreen:hover {
+			background: linear-gradient(rgba(0, 0, 0, 0.075), rgba(0, 0, 0, 0.075)), rgba(255, 255, 255, 0.375) !important;
+			box-shadow: 0 10px 35px rgba(0, 0, 0, 0.15), 0 0 20px rgba(0, 0, 0, 0.08) !important;
+			border-color: rgba(0, 0, 0, 0.3) !important;
+			backdrop-filter: blur(8px) !important;
+			-webkit-backdrop-filter: blur(8px) !important;
+		}
+
+        /* Core type colors for CPU */
+        .core-box.p-core {
+            border-color: var(--accent-blue) !important;
+            background: rgba(59, 130, 246, 0.08) !important;
+        }
+        .core-box.e-core {
+            border-color: var(--accent-cyan) !important;
+            background: rgba(6, 182, 212, 0.06) !important;
+        }
+
+        /* =============================================================================
+        ABOUT / APP CREDITS PANEL (PURE TEXT & CENTERED LAYOUT)
+        ============================================================================= */
+        .about-panel:not(#credit-frozen) {
+            display: none !important;
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            margin: 0 !important;
+            box-sizing: border-box !important;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            padding: 0;
+            overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            user-select: text;
+            flex-direction: column;
+            animation: cardsMoveUpIn 0.4s ease-out forwards;
+        }
+
+        /* State saat panel About diproses keluar/tutup (KECUALI #credit-frozen) */
+        .about-panel:not(#credit-frozen).about-hidden {
+            animation: cardsMoveUpOut 0.35s ease-in forwards !important;
+            pointer-events: none;
+        }
+
+        /* Kunci pembungkus utama agar menjadi konteks koordinat (0,0) */
+        .main-content-area {
+            position: relative !important;
+            flex: 1 1 auto;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            width: 100%;
+        }
+
+        #credit-frozen {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            margin: 0 !important;
+            box-sizing: border-box !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow-y: auto !important;
+            scrollbar-width: none !important;
+            z-index: -9999 !important;         /* Di latar belakang */
+            pointer-events: none !important;    /* Tembus klik */
+            user-select: none !important;
+            opacity: 0 !important;             /* INVISIBLE / TIDAK TERLIHAT */
+            visibility: hidden !important;      /* INVISIBLE DARI VISUAL */
+            animation: none !important;
+            transition: none !important;
+        }
+
+        #credit-frozen * {
+            pointer-events: none !important;  /* Semua anak elemen juga tidak memblokir mouse */
+        }
+
+        .about-panel::-webkit-scrollbar {
+            display: none;
+        }
+
+        .dashboard.cards-hidden {
+            pointer-events: none;
+        }
+
+        body.show-about-panel .about-panel:not(#credit-frozen) {
+            display: flex !important;
+            animation: cardsMoveUpIn 0.4s ease-out forwards;
+        }
+        body.show-about-panel .dashboard {
+            display: none !important;
+        }
+
+        /* Screen 1: Hero Centered Wrapper */
+        .about-hero-wrap {
+            min-height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem 1rem;
+            flex-shrink: 0;
+        }
+
+        .about-title-main {
+            font-size: clamp(2.4rem, 4vw, 3.4rem);
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple), var(--accent-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.8rem;
+            line-height: 1.1;
+        }
+
+        .tech-pill-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 1.2rem;
+        }
+
+        .tech-pill {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            color: var(--accent-cyan);
+            padding: 4px 14px;
+            border-radius: 9999px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .about-sub-large {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .about-version-tag {
+            color: var(--accent-orange);
+            font-size: 1.15rem;
+            font-weight: 600;
+            opacity: 0.9;
+        }
+
+        .about-author-name {
+            color: var(--accent-purple);
+            font-weight: 800;
+        }
+
+        /* Screen 2: Secondary Content Wrapper (Movie Credit Center-Aligned) */
+        .about-content-wrap {
+            width: 100%;
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 12px 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 3.5rem;
+            flex-shrink: 0;
+        }
+
+        .about-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            gap: 1.2rem;
+        }
+
+        .about-section-heading {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .about-spec-list {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            gap: 1.25rem;
+        }
+
+        .about-spec-row {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            width: 100%;
+        }
+
+        .about-spec-label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+        }
+
+        .about-spec-value {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        /* GitHub Button & Closing Note (100% Scalable via REM/EM) */
+        .github-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.65rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            padding: 0.65rem 1.4rem;
+            border-radius: 9999px;
+            color: var(--text-main);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            line-height: 1.2;
+            width: max-content;
+            box-sizing: border-box;
+            transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+            cursor: pointer;
+        }
+
+        .github-link:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: var(--accent-blue);
+            color: var(--accent-blue);
+        }
+
+        .github-icon {
+            width: 1.25rem;
+            height: 1.25rem;
+            flex-shrink: 0;
+            fill: currentColor;
+        }
+
+        .closing-note {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+            max-width: 30rem;
+            font-style: italic;
+        }
+
+        .easter-effect-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            border-radius: var(--window-radius) !important;
+            overflow: hidden !important;
+            z-index: 200000;
+            pointer-events: none;
+            opacity: 0;
+            backdrop-filter: blur(0px);
+            -webkit-backdrop-filter: blur(0px);
+            transition: none !important;
+        }
+
+        /* Dark Mode: Efek redup 50% */
+        html[data-mode="dark"] .easter-effect-layer,
+        body[data-mode="dark"] .easter-effect-layer {
+            background-color: rgba(0, 0, 0, 0.50);
+        }
+
+        /* Light Mode: Efek terang 40% */
+        html[data-mode="light"] .easter-effect-layer,
+        body[data-mode="light"] .easter-effect-layer {
+            background-color: rgba(255, 255, 255, 0.50);
+        }
+
+        //* Pembungkus Kotak GitHub Kloning (Wadah + Ikon + Font Otomatis Ikut Skala Zoom) */
+        .easter-github-clone {
+            position: fixed !important;
+            z-index: 500000 !important;
+            left: 50vw !important;
+            transform: translateX(-50%) !important;
+            margin: 0 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 0.65rem !important;
+            padding: 0.65rem 1.4rem !important;
+            font-size: 0.95rem !important;
+            line-height: 1.2 !important;
+            width: max-content !important;
+            height: auto !important;
+            border-radius: 9999px !important;
+            box-sizing: border-box !important;
+            white-space: nowrap !important;
+            /* TAMBAHKAN PEMBATAS SAMA PERSIS SEPERTI .github-link ASLI */
+            border: 1px solid var(--glass-border) !important;
+            background: rgba(255, 255, 255, 0.05) !important;
+        }
+
+        .easter-github-clone .github-icon {
+            width: 1.25rem !important;
+            height: 1.25rem !important;
+            flex-shrink: 0 !important;
+        }
+
+        /* Mask Banner Horizontal */
+        .easter-mask-banner {
+            display: none !important;
+        }
+
+        body.easter-egg-active .easter-mask-banner {
+            opacity: 0 !important;
+        }
+
+        /* Dashboard tetap bersih tanpa mask */
+        .dashboard {
+            -webkit-mask-image: none !important;
+            mask-image: none !important;
+        }
+
+        /* Masking Gradien Halus: Mengikuti Skala Zoom secara Fleksibel (via REM) */
+        #about-panel {
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0rem, transparent 0.8rem, black 4.2rem, black 100%) !important;
+            mask-image: linear-gradient(to bottom, transparent 0rem, transparent 0.8rem, black 4.2rem, black 100%) !important;
+        }
+
+        /* BUNGKUS EASTER EGG CREDIT KEDUA & CHANGELOG (TRANSPARAN DARI KLIK) */
+        .easter-credit-wrapper {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100vw;
+            border-radius: 0 0 var(--window-radius) var(--window-radius) !important;
+            overflow: hidden !important;
+            z-index: 200005;
+            overflow-y: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            pointer-events: none !important;
+            user-select: text;
+            opacity: 0;
+            transition: opacity 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+            /* Masking gradien halus di bagian atas tepat di bawah tombol GitHub */
+            -webkit-mask-image: linear-gradient(to bottom, transparent 0rem, black 2.5rem, black 100%);
+            mask-image: linear-gradient(to bottom, transparent 0rem, black 2.5rem, black 100%);
+        }
+
+        /* 1. DEFAULT RESET: SEMUA ELEMEN & WADAH DI DALAMNYA TRANSPARAN TERHADAP KLIK */
+        .easter-credit-wrapper * {
+            pointer-events: none !important;
+        }
+
+        /* 2. KHUSUS KARTU CHANGELOG: MEMBLOKIR KLIK (BISA DI-SCROLL, DI-HOVER, & SELEKSI TEKS) */
+        .changelog-card,
+        .changelog-card * {
+            pointer-events: auto !important;
+        }
+
+        /* 3. TEKS JUDUL & PARAGRAF: MEMBLOKIR KLIK HANYA SEUKURAN HURUF/TEKS (FIT-CONTENT) */
+        .easter-credit-wrapper .tech-pill,
+        .easter-credit-wrapper .github-link,
+        .easter-credit-wrapper .about-section-heading,
+        .easter-credit-wrapper .about-spec-row,
+        .easter-credit-wrapper .about-spec-label,
+        .easter-credit-wrapper .about-spec-value,
+        .easter-credit-wrapper .closing-note,
+        .easter-credit-wrapper div[style*="font-size"],
+        .easter-credit-wrapper p {
+            pointer-events: auto !important;
+            width: fit-content !important;
+            max-width: 100% !important;
+        }
+
+        /* 4. KUNCI MUTLAK: WADAH HORIZONTAL CHANGELOG TIDAK MEMBLOKIR KLIK */
+        .changelog-cards-container,
+        #changelog-cards-wrapper {
+            pointer-events: none !important;
+            width: 100vw !important;
+        }
+
+        .easter-credit-wrapper::-webkit-scrollbar {
+            display: none;
+        }
+
+        body.easter-egg-active .easter-credit-wrapper {
+            opacity: 1;
+        }
+
+        .changelog-cards-container {
+            display: flex;
+            flex-direction: row;
+            gap: 1.2vw;
+            width: 100vw;
+            max-width: 100vw;
+            flex: 1 1 0;
+            min-height: 0;
+            align-items: stretch;
+            padding: 0.4rem 1.5vw;
+            overflow-x: auto;
+            overflow-y: visible;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            box-sizing: border-box;
+
+            padding-top: 20px !important;
+            padding-bottom: 20px !important;
+            margin-top: -20px !important;
+            margin-bottom: -20px !important;
+
+            padding-left: 1.5vw;
+            padding-right: 1.5vw;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            box-sizing: border-box;
+        }
+
+        .changelog-cards-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Menjaga alignment selalu di tengah secara visual tanpa merusak koordinat scroll 0 */
+        .changelog-cards-container::before,
+        .changelog-cards-container::after {
+            content: '';
+            margin: auto;
+            flex: 0 0 auto;
+        }
+
+        /* =============================================================================
+        CHANGELOG CARD - DARK MODE (Default: Latar Putih 0.06 & Shadow Hitam)
+        ============================================================================= */
+        .changelog-card {
+            flex: 0 0 calc((100vw - 3vw - 2.4vw) / 3) !important;
+            width: calc((100vw - 3vw - 2.4vw) / 3) !important;
+            max-width: calc((100vw - 3vw - 2.4vw) / 3) !important;
+            min-width: 260px;
+            height: 100%;
+            max-height: 100%;
+
+            /* Latar Putih Opacity 0.06 */
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            padding: 1.2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+
+            /* Shadow Hitam Ringkas */
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+
+            box-sizing: border-box;
+            flex-shrink: 0;
+            overflow: visible !important;
+        }
+
+        /* =============================================================================
+        CHANGELOG CARD - LIGHT MODE (Kebalikan: Latar Hitam Opacity 0.06 & Shadow Putih)
+        ============================================================================= */
+        html[data-mode="light"] .changelog-card,
+        body[data-mode="light"] .changelog-card,
+        body.light-mode .changelog-card {
+            /* Latar Hitam Opacity SAMMA PERSIS 0.06 */
+            background: rgba(0, 0, 0, 0.06) !important;
+            border: 1px solid rgba(0, 0, 0, 0.12) !important;
+
+            /* Shadow Putih Ringkas */
+            box-shadow: 0 4px 14px rgba(255, 255, 255, 0.35) !important;
+        }
+
+        /* Teks Judul Poin: Wrapping Turun ke Bawah (Tidak Terpotong Samping) */
+        .changelog-item-title {
+            font-weight: 700;
+            font-size: 0.88rem;
+            color: var(--text-main);
+            white-space: normal !important;
+            word-break: break-word !important;
+            overflow-wrap: break-word !important;
+            line-height: 1.35;
+        }
+
+        .changelog-item-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            flex: 1;
+            min-width: 0; /* Menjamin child flex melakukan wrap teks tanpa memaksa container melebar */
+        }
+
+        /* Warna Hitam Transparan di Light Mode */
+        body.light-mode .changelog-card {
+            background: rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        /* Area Dalam Card Yang Bisa Di-Autoscroll Vertikal */
+        .changelog-card-body {
+            flex: 1 1 0;
+            min-height: 0 !important;
+            height: 0 !important;
+            max-height: 100%;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+            overscroll-behavior-y: contain;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            padding-right: 4px;
+        }
+
+        .changelog-card-body::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Item Poin Berkelompok & Rapi */
+        .changelog-item {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+        }
+        body.light-mode .changelog-item {
+            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+        }
+        .changelog-item:last-child {
+            border-bottom: none;
+        }
+
+        .changelog-item-num {
+            font-weight: 800;
+            font-size: 0.85rem;
+            color: var(--accent-cyan);
+            min-width: 1.6rem;
+            padding-top: 0.1rem;
+        }
+
+        .changelog-item-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        /* Judul Poin: Warna Teks Seragam (Putih di Dark Mode / Gelap di Light Mode) */
+        .changelog-item-title {
+            font-weight: 700;
+            font-size: 0.88rem;
+            color: var(--text-main);
+        }
+
+        .changelog-item-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+
