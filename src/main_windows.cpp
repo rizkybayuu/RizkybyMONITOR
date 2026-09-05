@@ -4453,6 +4453,10 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lPara
             {
                 std::lock_guard<std::recursive_mutex> lock(g_win_mutex);
                 for (auto& [id, w] : g_windows) {
+                    if (w.controller) {
+                        w.controller->Close();
+                        w.controller = nullptr;
+                    }
                     all_hwnds.push_back(w.hwnd);
                 }
             }
@@ -4771,8 +4775,14 @@ static void createNewWindow(int win_id) {
     ShowWindow(hwnd, SW_SHOW);
     UpdateWindow(hwnd);
 
-    // Initialize WebView2 Runtime
-    std::wstring userDataFolder = strToWstr(g_app_dir) + L"\\webview2_data";
+    // Initialize WebView2 Runtime (tempatkan di %LOCALAPPDATA% agar tidak mengunci folder aplikasi)
+    wchar_t localApp[MAX_PATH] = {0};
+    std::wstring userDataFolder;
+    if (GetEnvironmentVariableW(L"LOCALAPPDATA", localApp, MAX_PATH) > 0) {
+        userDataFolder = std::wstring(localApp) + L"\\RizkybyMONITOR\\webview2_data";
+    } else {
+        userDataFolder = strToWstr(g_app_dir) + L"\\webview2_data";
+    }
 
     auto* envHandler = new EnvCreatedHandler(
             [hwnd, win_id](HRESULT result, ICoreWebView2Environment* env) -> HRESULT {
@@ -4910,11 +4920,14 @@ static bool isAnyRizkybyWindowActive() {
 static LRESULT CALLBACK LowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
     if (nCode == HC_ACTION) {
         MSLLHOOKSTRUCT* ms = (MSLLHOOKSTRUCT*)lParam;
-        bool superDown = g_super_physically_down;
+        bool superDown = g_super_physically_down || 
+                         ((GetAsyncKeyState(VK_LWIN) & 0x8000) != 0) || 
+                         ((GetAsyncKeyState(VK_RWIN) & 0x8000) != 0);
 
         if (!g_drag_active && superDown && (wParam == WM_LBUTTONDOWN || wParam == WM_RBUTTONDOWN)) {
             HWND target = findWindowUnderPoint(ms->pt);
             if (target) {
+                SetForegroundWindow(target);
                 g_drag_active = true;
                 g_super_click_consumed = true;
                 // Masking Windows Key dengan dummy keystroke agar Windows membatalkan Start Menu secara alami
@@ -4956,12 +4969,12 @@ static LRESULT CALLBACK LowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lPara
             g_drag_hwnd = NULL;
             saveWindowConfig(); // fix: resize custom (Super+klik-kanan) gak lewat WM_EXITSIZEMOVE
 
-            // Saat mouse dilepas di luar window RizkybyMONITOR, pastikan hold super langsung mati total
-            if (!isAnyRizkybyWindowActive()) {
+            // Jika tombol Super fisik sudah tidak ditekan saat klik dilepas, reset state
+            bool physicalSuper = ((GetAsyncKeyState(VK_LWIN) & 0x8000) != 0) || 
+                                 ((GetAsyncKeyState(VK_RWIN) & 0x8000) != 0);
+            if (!physicalSuper) {
                 g_super_physically_down = false;
                 g_super_click_consumed = false;
-                keybd_event(VK_LWIN, 0, KEYEVENTF_KEYUP, 0);
-                keybd_event(VK_RWIN, 0, KEYEVENTF_KEYUP, 0);
             }
             return 1;
         }
@@ -4977,14 +4990,6 @@ static LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lP
         if (isSuperKey) {
             bool isKeyDown = (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN);
             bool isKeyUp   = (wParam == WM_KEYUP   || wParam == WM_SYSKEYUP);
-
-            // KONDISI KHUSUS: Jika RizkybyMONITOR tidak punya active window,
-            // dan sedang tidak drag, maka event hold super WAJIB HILANG
-            if (!isAnyRizkybyWindowActive() && !g_drag_active && !g_super_click_consumed) {
-                g_super_physically_down = false;
-                g_super_click_consumed = false;
-                return CallNextHookEx(g_keyboard_hook, nCode, wParam, lParam);
-            }
 
             if (isKeyDown) {
                 g_super_physically_down = true;
@@ -5055,6 +5060,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int) {
 
     // Data writable per-user (config.json JANGAN ditaruh di folder exe, bisa read-only)
     g_data_dir = g_app_dir;
+
+    // Lepaskan lock CWD dari folder aplikasi agar OS Windows tidak pernah mengunci direktori ini
+    SetCurrentDirectoryW(L"C:\\");
 
     WNDCLASSEXW wc = {};
     wc.cbSize = sizeof(wc);
@@ -5137,6 +5145,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int) {
     g_running = false;
     saveWindowConfig();
     CoUninitialize();
+	ExitProcess(0);
     return 0;
 }
 

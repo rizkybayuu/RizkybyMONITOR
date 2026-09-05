@@ -131,6 +131,9 @@
             }
         };
 
+        let g_telemetry_interval_sec = parseFloat(safeStorage.getItem(`rizkyby_${windowId}_telemetry_sec`)) || 1.0;
+        if (isNaN(g_telemetry_interval_sec) || g_telemetry_interval_sec < 0.5) g_telemetry_interval_sec = 1.0;
+
         let _renderedCredits = false;
 
         let isEasterEggActive = false;
@@ -243,7 +246,7 @@
 
             const targetLinearSpeed = 65;
             const easeDuration = 1000;
-            const initialDelay = 2000;
+            const initialDelay = (startPos === 0) ? 2000 : 0;
 
             const easeDistance = 0.5 * targetLinearSpeed * (easeDuration / 1000);
             const totalRemaining = maxScroll - startPos;
@@ -773,10 +776,15 @@
                             if (item.label === 'Core Runtime') colorStyle = ' style="color:var(--accent-blue);"';
                             else if (item.label === 'Telemetry Pipeline') colorStyle = ' style="color:var(--accent-green);"';
                             else if (item.label === 'Storage Diagnostics') colorStyle = ' style="color:var(--accent-orange);"';
+                            
+                            const isLatency = (item.label === 'Telemetry Latency');
+                            const valId = isLatency ? ' id="about-spec-telemetry-latency"' : '';
+                            const displayVal = isLatency ? `${Math.round(g_telemetry_interval_sec * 1000)}ms Non-Blocking Polling (Sub-millisecond Compute)` : item.val;
+
                             return `
                             <div class="about-spec-row">
                                 <span class="about-spec-label">${item.label}</span>
-                                <span class="about-spec-value"${colorStyle}>${item.val}</span>
+                                <span class="about-spec-value"${valId}${colorStyle}>${displayVal}</span>
                             </div>`;
                         }).join('')}
                     </div>
@@ -1131,7 +1139,7 @@
                         <div class="about-spec-list">
                             <div class="about-spec-row">
                                 <span class="about-spec-label">Telemetry Latency</span>
-                                <span class="about-spec-value">500ms Non-Blocking Polling (Sub-millisecond Compute)</span>
+                                <span class="about-spec-value" id="about-spec-telemetry-latency">${Math.round(g_telemetry_interval_sec * 1000)}ms Non-Blocking Polling (Sub-millisecond Compute)</span>
                             </div>
                             <div class="about-spec-row">
                                 <span class="about-spec-label">Subprocess Overhead</span>
@@ -1224,7 +1232,7 @@
                         <div class="about-spec-list">
                             <div class="about-spec-row">
                                 <span class="about-spec-label">Telemetry Latency</span>
-                                <span class="about-spec-value">500ms Non-Blocking Polling (Sub-millisecond Compute)</span>
+                                <span class="about-spec-value" id="about-spec-telemetry-latency">${Math.round(g_telemetry_interval_sec * 1000)}ms Non-Blocking Polling (Sub-millisecond Compute)</span>
                             </div>
                             <div class="about-spec-row">
                                 <span class="about-spec-label">Subprocess Overhead</span>
@@ -1371,6 +1379,7 @@
                     if (topCpuKey !== _prevTopCpu) {
                         _prevTopCpu = topCpuKey;
                         const topCpuCont = document.getElementById('top-cpu');
+                        const prevScroll = topCpuCont.scrollTop;
                         topCpuCont.innerHTML = data.processes.cpu.map((p, idx) => {
                             const pctVal = parseFloat(p.val) || 0;
                             return `
@@ -1384,6 +1393,7 @@
                                 </div>
                             `;
                         }).join('');
+                        topCpuCont.scrollTop = prevScroll;
                     }
                 }
 
@@ -1584,6 +1594,7 @@
                     if (topMemKey !== _prevTopMem) {
                         _prevTopMem = topMemKey;
                         const topMemCont = document.getElementById('top-mem');
+						const prevScroll = topMemCont.scrollTop;
                         topMemCont.innerHTML = data.processes.mem.map((p, idx) => `
                             <div class="list-item" style="display:flex; align-items:center; gap:6px;">
                                 <span style="color: var(--accent-green); font-weight: 700; flex-shrink: 0; min-width: 1.4rem;">${idx + 1}.</span>
@@ -1611,6 +1622,7 @@
                     if (topNetKey !== _prevTopNet) {
                         _prevTopNet = topNetKey;
                         const topNetCont = document.getElementById('top-net');
+						const prevScroll = topNetCont.scrollTop;
                         if (data.processes.net.length > 0) {
                             topNetCont.innerHTML = data.processes.net.map((p, idx) => `
                                 <div class="list-item" style="display:flex; align-items:center; gap:6px;">
@@ -1672,6 +1684,7 @@
                         } else {
                             topDiskCont.innerHTML = `<div class="list-item" style="justify-content:center; color:var(--text-muted); font-style:italic;">No Active Disk I/O on ${activeDev}</div>`;
                         }
+						topDiskCont.scrollTop = prevScroll;
                     }
                 }
 
@@ -2407,8 +2420,6 @@
         // PENGATURAN INTERVAL TELEMETRI & KONTROL AUTOSCROLL CYCLE (▶ ⏸ ■)
         // =====================================================================
         let g_autoscroll_mode = safeStorage.getItem(`rizkyby_${windowId}_autoscroll_mode`) || 'on';
-        let g_telemetry_interval_sec = parseFloat(safeStorage.getItem(`rizkyby_${windowId}_telemetry_sec`)) || 1.0;
-        if (isNaN(g_telemetry_interval_sec) || g_telemetry_interval_sec < 0.5) g_telemetry_interval_sec = 1.0;
 
         let g_telemetry_timer = null;
 
@@ -2502,8 +2513,8 @@
             }
         });
 
-        // Tangkap event interaktif di disabled window: scroll wheel & klik (kiri, tengah, kanan)
-        function triggerSmartMouseActivity() {
+        // Pure Hover: Cukup kursor masuk ke area window, autoscroll langsung aktif
+        function onSmartMouseEnterWindow() {
             if (g_autoscroll_mode === 'smart' && !document.hasFocus()) {
                 if (!g_smart_unfocused_active) {
                     g_smart_unfocused_active = true;
@@ -2511,10 +2522,8 @@
                 }
             }
         }
-        window.addEventListener('wheel', triggerSmartMouseActivity, { passive: true });
-        window.addEventListener('mousedown', triggerSmartMouseActivity);
-        window.addEventListener('auxclick', triggerSmartMouseActivity);
-        window.addEventListener('contextmenu', triggerSmartMouseActivity);
+        document.addEventListener('mouseenter', onSmartMouseEnterWindow);
+        window.addEventListener('mouseenter', onSmartMouseEnterWindow);
 
         // Saat cursor meninggalkan window (hover pergi), matikan autoscroll
         function onSmartMouseLeaveWindow(e) {
@@ -2540,6 +2549,12 @@
             const displayEl = document.getElementById('interval-display-ms');
             if (inputEl) inputEl.value = sec.toFixed(1) + 's';
             if (displayEl) displayEl.textContent = Math.round(sec * 1000) + 'ms';
+
+            // Update teks latency pada panel About secara real-time
+            const latencyEls = document.querySelectorAll('#about-spec-telemetry-latency');
+            latencyEls.forEach(el => {
+                el.textContent = `${Math.round(sec * 1000)}ms Non-Blocking Polling (Sub-millisecond Compute)`;
+            });
 
             // Restart interval telemetri
             if (g_telemetry_timer) clearInterval(g_telemetry_timer);
@@ -2695,7 +2710,8 @@
                     el._hasInitializedScroll = true;
                 }
                 el.dataset.scrolling = "true";
-                let startTime = performance.now();
+                let lastActiveTime = null;
+                let accumulatedTime = 0;
                 let paused = false;
                 let direction = 1;
                 let idleTimer = null;
@@ -2712,10 +2728,9 @@
                         let effectiveRatio = isRightAligned ? (1 - ratio) : ratio;
                         let linearRatio = inverseEaseInOutCubic(effectiveRatio);
                         let cycle = direction === 1 ? linearRatio : (2 - linearRatio);
-                        startTime = performance.now() - (cycle * duration);
-                    } else {
-                        startTime = performance.now();
+                        accumulatedTime = cycle * duration;
                     }
+                    lastActiveTime = null;
                 }
                 
                 function triggerManualScroll(e) {
@@ -2778,9 +2793,15 @@
                     let isScrollPermitted = isAutoscrollAllowed();
 
                     if (!paused && isScrollPermitted) {
+                        if (lastActiveTime === null) {
+                            lastActiveTime = currentTime;
+                        }
+                        let delta = currentTime - lastActiveTime;
+                        lastActiveTime = currentTime;
+                        accumulatedTime += delta;
+
                         duration = calcDuration(scrollMax, isVertical);
-                        let elapsed = currentTime - startTime;
-                        let cycle = (elapsed / duration) % 2;
+                        let cycle = (accumulatedTime / duration) % 2;
                         direction = cycle <= 1 ? 1 : -1;
                         let linearRatio = cycle <= 1 ? cycle : (2 - cycle);
                         let easedRatio = easeInOutCubic(linearRatio);
@@ -2793,6 +2814,9 @@
                         } else {
                             el.scrollLeft = pos;
                         }
+                    } else {
+                        // Saat stop/pause: bekukan waktu total, jangan hitung delta
+                        lastActiveTime = null;
                     }
                     
                     requestAnimationFrame(animate);
@@ -3630,7 +3654,7 @@
             // === PENGATURAN KECEPATAN & EASE ===
             const targetLinearSpeed = 65;
             const easeDuration = 1000;
-            const initialDelay = 2000; // Jeda tepat 3 detik di titik 0 sebelum mulai meluncur
+            const initialDelay = (startPos === 0) ? 2000 : 0;
 
             const easeDistance = 0.5 * targetLinearSpeed * (easeDuration / 1000);
             const totalRemaining = maxScroll - startPos;
@@ -4003,12 +4027,12 @@
                                     </div>
                                 </div>
 
-                                <!-- CARD 3: VERSION 1.2 STABLE (CURRENT PRODUCTION) -->
+                                <!-- CARD 3: VERSION 1.2 STABLE & REFINED -->
                                 <div class="changelog-card" style="text-align: left;">
                                     <div style="display: flex; flex-direction: column; gap: 0.3rem; padding-bottom: 0.6rem; border-bottom: 1px solid rgba(255,255,255,0.12); flex-shrink: 0;">
                                         <div style="display: flex; justify-content: space-between; align-items: center;">
-                                            <span style="font-size: 1.15rem; font-weight: 800; color: var(--accent-green, #10b981);">v1.2 Stable & Refined</span>
-                                            <span class="tech-pill" style="border-color: var(--accent-green, #10b981); color: var(--accent-green, #10b981); font-size: 0.72rem;">Current Production</span>
+                                            <span style="font-size: 1.15rem; font-weight: 800; color: var(--accent-blue);">v1.2 Stable </span>
+                                            <span class="tech-pill" style="border-color: var(--accent-blue); color: var(--accent-blue); font-size: 0.72rem;">Stable & Refined</span>
                                         </div>
                                         <div style="font-size: 0.8rem; color: var(--text-muted);">Smart autoscroll engine, live telemetry panel &amp; CPU thermal helper.</div>
                                     </div>
@@ -4091,6 +4115,54 @@
                                             <div class="changelog-item-content">
                                                 <div class="changelog-item-title">Tooltip Whitespace Indentation &amp; Multilingual Polish</div>
                                                 <div class="changelog-item-desc">Standardized non-breaking spacing (&amp;nbsp;) on status symbols and eliminated redundant Indonesian/English text duplicates for consistent English UI.</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+								
+								<!-- CARD 4: VERSION 1.2.1 HOTFIX (CURRENT PRODUCTION) -->
+                                <div class="changelog-card" style="text-align: left;">
+                                    <div style="display: flex; flex-direction: column; gap: 0.3rem; padding-bottom: 0.6rem; border-bottom: 1px solid rgba(255,255,255,0.12); flex-shrink: 0;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <span style="font-size: 1.15rem; font-weight: 800; color: var(--accent-green, #10b981);">v1.2.1 Hotfix</span>
+                                            <span class="tech-pill" style="border-color: var(--accent-green, #10b981); color: var(--accent-green, #10b981); font-size: 0.72rem;">Current Production</span>
+                                        </div>
+                                        <div style="font-size: 0.8rem; color: var(--text-muted);">Window drag activation bypass, anti-jump autoscroll &amp; dynamic telemetry sync.</div>
+                                    </div>
+                                    <div class="changelog-card-body">
+                                        <div class="changelog-item">
+                                            <span class="changelog-item-num">01.</span>
+                                            <div class="changelog-item-content">
+                                                <div class="changelog-item-title">Fluid Non-Focused Super Drag &amp; Resize</div>
+                                                <div class="changelog-item-desc">Super + Left-Click Drag and Super + Right-Click Resize can now be triggered immediately from background state without requiring prior window focus.</div>
+                                            </div>
+                                        </div>
+                                        <div class="changelog-item">
+                                            <span class="changelog-item-num">02.</span>
+                                            <div class="changelog-item-content">
+                                                <div class="changelog-item-title">Simplified Smart Autoscroll on Hover</div>
+                                                <div class="changelog-item-desc">Eliminated redundant mouse wheel/click requirements on Smart Autoscroll (⏸); autoscroll now naturally resumes upon container cursor hover.</div>
+                                            </div>
+                                        </div>
+                                        <div class="changelog-item">
+                                            <span class="changelog-item-num">03.</span>
+                                            <div class="changelog-item-content">
+                                                <div class="changelog-item-title">Seamless Autoscroll Position Continuity</div>
+                                                <div class="changelog-item-desc">Fixed erratic scroll jumping upon resume by locking physical scrollTop and resynchronizing animation baseline time offsets.</div>
+                                            </div>
+                                        </div>
+                                        <div class="changelog-item">
+                                            <span class="changelog-item-num">04.</span>
+                                            <div class="changelog-item-content">
+                                                <div class="changelog-item-title">Dynamic Real-Time Telemetry Latency Sync</div>
+                                                <div class="changelog-item-desc">Telemetry Latency specification in About modal now dynamically binds to active polling intervals, immediately reflecting Alt+F rate adjustments.</div>
+                                            </div>
+                                        </div>
+                                        <div class="changelog-item">
+                                            <span class="changelog-item-num">05.</span>
+                                            <div class="changelog-item-content">
+                                                <div class="changelog-item-title">Clean Process Lifecycle &amp; Lock Immunity</div>
+                                                <div class="changelog-item-desc">Hardened exit teardown ensuring all child pipelines, worker threads, and system handles release cleanly to prevent directory locks.</div>
                                             </div>
                                         </div>
                                     </div>
@@ -4324,7 +4396,7 @@
                 return;
             }
 
-            const initialDelay = 1000;    // Jeda 1 detik di titik 0
+            const initialDelay = (startPos === 0) ? 1000 : 0;
             const easeInTime = 1200;      // Akselerasi awal
             const easeOutTime = 1400;     // Deselerasi halus sampai diam
             const totalRemaining = maxScroll - startPos;

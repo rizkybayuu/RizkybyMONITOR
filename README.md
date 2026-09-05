@@ -1,6 +1,6 @@
 # RizkybyMONITOR ⚡
 
-[![Release](https://img.shields.io/badge/release-v1.2-blue.svg)](https://github.com/rizkybayuu/RizkybyMONITOR/releases)
+[![Release](https://img.shields.io/badge/release-v1.2.1-blue.svg)](https://github.com/rizkybayuu/RizkybyMONITOR/releases)
 [![Language](https://img.shields.io/badge/language-C%2B%2B17-00599C.svg)](https://en.cppreference.com/w/cpp/17)
 [![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20Windows-FCC624.svg)](https://github.com/rizkybayuu/RizkybyMONITOR)
 [![Linux Distros](https://img.shields.io/badge/linux-10%2B%20distro%20families-333333.svg)](#-linux-1-click-autonomous-builder)
@@ -14,58 +14,21 @@ https://github.com/user-attachments/assets/60072469-1e95-41e1-89f1-4d564b85b6c1
 
 ---
 
-## 🌟 What's New in v1.2
+## 🌟 What's New in v1.2.1
+- 🪟 **Fluid Non-Focused Super Drag & Resize**: Immediate window moving (`Super + Left-Click Drag`) and resizing (`Super + Right-Click Drag`) triggered directly from background state without requiring the window to be pre-focused or active.
+- 📜 **Simplified Smart Autoscroll on Hover**: Removed redundant click/scroll interaction requirements on Smart Autoscroll (`⏸`). Autoscroll now smoothly runs as soon as the mouse cursor enters the dashboard container (hover) and idles when moving out.
+- 🎯 **Seamless Autoscroll Position Continuity (Anti-Jump Fix)**: Completely eliminated scroll jumping upon autoscroll resume by snapshotting exact physical `scrollTop` coordinates and synchronizing animation baseline offsets.
+- ⏱️ **Dynamic Real-Time Telemetry Latency in About Panel**: The `Telemetry Latency` specification row in the About dialog is now bound to dynamic DOM state, instantly mirroring live polling intervals set via `Alt + F` (e.g. `1000ms Non-Blocking Polling`).
+- 🛡️ **Clean Process Lifecycle & Directory Lock Immunity**: Hardened application exit routines to ensure thorough cleanup of telemetry threads, pipes, and OS handles, preventing background locks on host directories across FAT32 and NTFS filesystems.
+
+---
+
+## 🌟 About Previous in v1.2
 - 📜 **Tri-State Smart Autoscroll Engine (`▶` `⏸` `■`)**: Multi-mode autoscroll supporting **Always Active** (`▶`), **Smart Contextual** (`⏸` runs on active window or on inactive windows upon mouse wheel/click interaction and pauses on mouseleave), and **Disabled** (`■` for maximum GPU power saving). Controlled via button click or `Alt + S`.
 - ⏱️ **Adaptive Real-Time Telemetry Control (`Alt + F`)**: Frosted glassmorphism refresh rate panel with live slider, mouse wheel scrolling directly on the interval value (min 500ms), glow styling, theme adaptation, and instant `POST /api/config` synchronization across Win32 and GTK3 backends.
 - 🌡️ **Dedicated .NET 8 CPU Thermal Sensor Helper**: High-precision package and per-core temperature telemetry via `rzkmon_sensor.exe` (powered by LibreHardwareMonitorLib) with 2-second caching to minimize CPU overhead.
 - 🪟 **Super Key Non-Sticking Window Drag**: Fixed low-level keyboard hook release lifecycle so `Super + Drag` and `Super + Right-Click Resize` never leave the Windows key stuck down in the operating system.
 - 🛠️ **Hardened 1-Click Autonomous Builders**: Added forced package resolution, real-time NuGet restore feedback, and automated official Microsoft bootstrap fallback.
-
----
-
-## 🌟 About Previous in v1.1
-
-- 🚀 **1-Click Autonomous Cross-Platform Builders**:
-  - **`build_linux.sh`**: Automatic terminal launcher detection (8 terminal emulators), auto-detection of **10 Linux package-manager families** (`apt`, `dnf`/`yum`, `zypper`, `pacman`, `xbps`, `apk`, `emerge`, `eopkg`, `nix`, `slackware`) covering virtually every mainstream distro (Ubuntu, Debian, Mint, Pop!_OS, Fedora, RHEL/CentOS/Rocky/Alma, openSUSE, Arch/Manjaro/EndeavourOS, Void, Alpine, Gentoo, Solus, NixOS, Slackware and more), per-dependency multiple-candidate-name fallback (tries several possible package names per distro release), automatic install-failure diagnosis (network / disk-full / sudo / missing-package / conflict / locked package manager), copy-pasteable manual-install instructions when auto-install fails, and 1-click passwordless sudoers setup scoped strictly to `smartctl` for SSD/HDD SMART telemetry.
-  - **`build_windows.bat`**: Automatic UAC Administrator elevation, automatic Windows Defender exclusion for the build folder, stale-process cleanup (`taskkill`) before rebuilding, a layered compiler discovery pipeline (MSVC via `vswhere` → PATH → known install-location fast-path → `winget`/`choco`/`scoop` → recursive PowerShell disk scan → portable `w64devkit` auto-download from GitHub Releases), automatic `.NET SDK` detection/install for the CPU thermal helper, MSR-level CPU sensor helper compilation (`rzkmon_sensor.exe`, powered by LibreHardwareMonitorLib), and automatic Microsoft WebView2 SDK detection/download via NuGet.
-- 🧊 **Frameless Borderless Glass UI**: Fully transparent, rounded-corner, compositor-blended window on both platforms — DWM sheet-of-glass + `DWMWA_WINDOW_CORNER_PREFERENCE`/`DWMWA_BORDER_COLOR` on Windows, and Cairo `CAIRO_OPERATOR_CLEAR` compositing over a compositor-checked GTK screen on Linux — with backdrop blur, glow accents, and zero hard window chrome.
-- 🧩 **Hybrid CPU Architecture & Core Topology**:
-  - Dynamic identification and distinctive color badges for **P-Cores (Performance Cores)** and **E-Cores (Efficient Cores)**.
-  - Real-time per-core dynamic clock frequencies and utilization.
-  - **CPU Smart Cache Hierarchy** (L1, L2, L3 cache detection up to ~1.5 TB/s throughput).
-  - **Layered CPU package temperature detection**: `hwmon` (`coretemp` / `k10temp` / `zenpower`) prioritized first, with automatic fallback to the `x86_pkg_temp` thermal zone on Linux; MSR-level readout via the bundled `rzkmon_sensor.exe` helper on Windows.
-  - CPU card dual layout: Left (Total Usage Chart & Top 5 Processes with color-coded percentage badges) and Right (Adaptive Core Grid).
-- 🎮 **Multi-GPU & External GPU (eGPU) Intelligence**:
-  - Multi-GPU dropdown selector (styled cleanly like the Disk and Color Pickers) that enumerates **every physical adapter** — iGPU, dGPU, and eGPU simultaneously — with persistent device memory per window.
-  - Vendor-specific telemetry engines:
-    - **Intel Iris Xe iGPU**: 4-engine breakdown (Render/3D RCS, Blitter/2D BCS, Video Decode VCS, Video Enhance VECS).
-    - **NVIDIA eGPU / dGPU**: Dedicated cores breakdown (CUDA 3D/Graphics Cores, Tensor Cores for AI/ML, RT Cores for Ray Tracing, Video Encoder & Decoder), including full multi-GPU NVIDIA setups via `nvidia-smi`.
-    - **AMD / Other GPUs**: Dynamic engine and utilization mapping via DRM sysfs (`mem_info_vram_total` / `lmem_total_bytes`).
-  - Dedicated VRAM (eGPU) vs Shared System VRAM (iGPU) real-time meters, plus automatic Removable/Flash media detection carried through to the disk card.
-- ⚡ **Unified High-Speed to Low-Speed Memory Hierarchy**:
-  - Visual speed stack in RAM card:
-    1. 🟦 **CPU Smart Cache** (~1.5 TB/s)
-    2. 🟪 **Dedicated VRAM** (eGPU NVIDIA/AMD, ~300-800 GB/s)
-    3. 🟩 **Physical RAM** (Used by Apps, Buffers/Cached, Shared VRAM, ~40 GB/s)
-    4. 🟧 **ZRAM** (Compressed in-RAM swap pool with zstd, ~20 GB/s)
-    5. 🟥 **External SWAP** (NVMe/SSD/HDD/USB emergency swap pool, ~1 GB/s)
-- 🔋 **Deep Battery & Power Telemetry**: Model & manufacturer, chemistry (Li-ion / Li-Po / NiMH / NiCd / LiFePO4), health % (current-full vs design capacity), charge/discharge rate in Watts, cycle count, live voltage, battery temperature, and an estimated time-remaining readout that prefers the driver-reported value and falls back to a manual Wh/W calculation — reported identically whether the machine is a laptop on battery or a desktop on AC power.
-- 💽 **Multi-Disk Storage & Per-Device Process Isolation**:
-  - Dynamic disk dropdown selector with per-window persistent device memory.
-  - Real-time read/write throughput and partition free capacity.
-  - Universal NVMe SMART health, TBW (Total Bytes Written), drive temperature, and rated endurance status.
-  - Automatic **Removable Media (Flash/SD)** classification, separate from SSD/HDD, so USB flash drives and SD cards get their own icon and detail view instead of falling back to the generic "exotic storage" bucket.
-  - **Isolated Per-Device Top 5 Processes**: Tracks exactly which processes are hitting that specific physical disk (via Windows ETW kernel driver events and Linux `/proc/[pid]/io` isolation).
-- 🪟 **Persistent Multi-Window Sessions**: Every window remembers its own theme, font size, selected disk/GPU, active detail cards, always-on-top state, position/size, and **custom window title** (renamed via the UI) across restarts — restored automatically the next time the app launches, on both platforms.
-- 🛡️ **Hardened Local API Surface**: The embedded loopback HTTP server (auto-binds to the first free port in `127.0.0.1:8080-8095`) strictly sanitizes device-identifier input on disk-detail lookups (alphanumeric/`-`/`_` only, capped length) to close off command-injection vectors, and only ever listens on `127.0.0.1` — never exposed to the LAN.
-- 🎨 **28 Handcrafted Color Palettes & Dual Themes**:
-  - **14 Dark Palettes**: Neon Cyberpunk, Terminal Matrix, Volcanic Crimson, Golden Luxury, Synthwave 80s, Emerald Aurum, Sunset Horizon, Amethyst Prism, Abyssal Deep, Sakura Blossom, Glacier Frost, Dracula Purple, Cyber Fox, Pure Silver.
-  - **14 Light Palettes**: Pastel Breeze, Matcha Garden, Crimson Ruby, Royal Amber, Nordic Frost, Strawberry Cream, Citrus Sunshine, Lavender Glow, Cotton Candy, Nordic Sage, Espresso Cream, Arctic Crystal, Peach Blossom, Minimal Ink.
-  - Dark & Light mode switchers with zero font-doubling or ghost artifacts.
-  - Card Fullscreen Zoom Mode retaining responsive hover brightness highlights.
-  - Precision hover tooltips restricted to title text (not entire card header frame).
-  - True middle-click clipboard copy (`xclip`, `wl-copy`, Win32 API) — for both card metrics and full hover-tooltip text.
-  - Sub-pixel typography and scaling via Ctrl + Mouse Wheel (8px – 32px font scale).
 
 ---
 
