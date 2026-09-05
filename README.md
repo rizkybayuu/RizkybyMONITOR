@@ -206,17 +206,26 @@ rizkybymonitor_windows.exe
 
 ```
 RizkybyMONITOR/
+├── .github/                 # GitHub platform templates & security policy
+│   ├── ISSUE_TEMPLATE/     # Interactive bug & feature request forms
+│   │   ├── bug_report.md
+│   │   └── feature_request.md
+│   ├── pull_request_template.md # Auto-filled PR review checklist
+│   └── SECURITY.md          # Integrated GitHub security advisory policy
+├── docs/                    # Community & contributor documentation
+│   ├── CODE_OF_CONDUCT.md   # Contributor pledge & standards
+│   └── CONTRIBUTING.md      # Developer guide, build steps & workflow
+├── assets/
+│   └── overview.mp4        # Hero overview demonstration video
+├── src/
+│   ├── main_linux.cpp      # Linux backend: C++17 daemon, GTK3, sysfs/procfs telemetry
+│   └── main_windows.cpp    # Windows backend: Win32, WebView2, ETW, WMI, IOCTL
 ├── build_linux.sh          # Linux 1-click multi-distro dependency resolver & compiler
 ├── build_windows.bat       # Windows 1-click compiler scanner, SDK fetcher & build script
 ├── index.html              # Shared dashboard UI (WebKit2GTK / WebView2)
 ├── README.md               # Project documentation
 ├── LICENSE                 # MIT License
-├── .gitignore              # Git exclusion rules
-├── assets/
-│   └── overview.mp4        # Hero overview demonstration video
-└── src/
-    ├── main_linux.cpp      # Linux backend: C++17 daemon, GTK3, sysfs/procfs telemetry
-    └── main_windows.cpp    # Windows backend: Win32, WebView2, ETW, WMI, IOCTL
+└── .gitignore              # Git exclusion rules
 ```
 
 Generated at build time (not tracked in source control):
