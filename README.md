@@ -1,6 +1,6 @@
 # RizkybyMONITOR ⚡
 
-[![Release](https://img.shields.io/badge/release-v1.1-blue.svg)](https://github.com/rizkybayuu/RizkybyMONITOR/releases)
+[![Release](https://img.shields.io/badge/release-v1.2-blue.svg)](https://github.com/rizkybayuu/RizkybyMONITOR/releases)
 [![Language](https://img.shields.io/badge/language-C%2B%2B17-00599C.svg)](https://en.cppreference.com/w/cpp/17)
 [![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20Windows-FCC624.svg)](https://github.com/rizkybayuu/RizkybyMONITOR)
 [![Linux Distros](https://img.shields.io/badge/linux-10%2B%20distro%20families-333333.svg)](#-linux-1-click-autonomous-builder)
@@ -14,7 +14,16 @@ https://github.com/user-attachments/assets/60072469-1e95-41e1-89f1-4d564b85b6c1
 
 ---
 
-## 🌟 What's New in v1.1
+## 🌟 What's New in v1.2
+- 📜 **Tri-State Smart Autoscroll Engine (`▶` `⏸` `■`)**: Multi-mode autoscroll supporting **Always Active** (`▶`), **Smart Contextual** (`⏸` runs on active window or on inactive windows upon mouse wheel/click interaction and pauses on mouseleave), and **Disabled** (`■` for maximum GPU power saving). Controlled via button click or `Alt + S`.
+- ⏱️ **Adaptive Real-Time Telemetry Control (`Alt + F`)**: Frosted glassmorphism refresh rate panel with live slider, mouse wheel scrolling directly on the interval value (min 500ms), glow styling, theme adaptation, and instant `POST /api/config` synchronization across Win32 and GTK3 backends.
+- 🌡️ **Dedicated .NET 8 CPU Thermal Sensor Helper**: High-precision package and per-core temperature telemetry via `rzkmon_sensor.exe` (powered by LibreHardwareMonitorLib) with 2-second caching to minimize CPU overhead.
+- 🪟 **Super Key Non-Sticking Window Drag**: Fixed low-level keyboard hook release lifecycle so `Super + Drag` and `Super + Right-Click Resize` never leave the Windows key stuck down in the operating system.
+- 🛠️ **Hardened 1-Click Autonomous Builders**: Added forced package resolution, real-time NuGet restore feedback, and automated official Microsoft bootstrap fallback.
+
+---
+
+## 🌟 About Previous in v1.1
 
 - 🚀 **1-Click Autonomous Cross-Platform Builders**:
   - **`build_linux.sh`**: Automatic terminal launcher detection (8 terminal emulators), auto-detection of **10 Linux package-manager families** (`apt`, `dnf`/`yum`, `zypper`, `pacman`, `xbps`, `apk`, `emerge`, `eopkg`, `nix`, `slackware`) covering virtually every mainstream distro (Ubuntu, Debian, Mint, Pop!_OS, Fedora, RHEL/CentOS/Rocky/Alma, openSUSE, Arch/Manjaro/EndeavourOS, Void, Alpine, Gentoo, Solus, NixOS, Slackware and more), per-dependency multiple-candidate-name fallback (tries several possible package names per distro release), automatic install-failure diagnosis (network / disk-full / sudo / missing-package / conflict / locked package manager), copy-pasteable manual-install instructions when auto-install fails, and 1-click passwordless sudoers setup scoped strictly to `smartctl` for SSD/HDD SMART telemetry.
@@ -63,29 +72,29 @@ https://github.com/user-attachments/assets/60072469-1e95-41e1-89f1-4d564b85b6c1
 ## 📐 Dashboard Layout Architecture
 
 ```
-+-------------------------------------------------------------------------------+
-|  RizkybyMONITOR  |  🎨 Neon Cyberpunk ▼  |  🌙 ☀️  |  🌡️ 45°C  🔋 95%  🗗  📌  ⏻  |
-+-------------------------------------------------------------------------------+
-|  ⚙️ CPU (P/E Cores & Smart Cache) |  ⚡ GPU (Intel Iris Xe / NVIDIA eGPU)      |
-|  - Left: Usage Chart & Top 5 Procs |  - Dynamic GPU Switcher Dropdown         |
-|  - Right: P-Cores & E-Cores Grid   |  - RCS/CUDA, Tensor & RT Core Gauges     |
-|  - L1/L2/L3 Smart Cache Speed      |  - Dedicated VRAM & Shared VRAM Meters   |
-+-------------------------------------------------------------------------------+
-|  🧠 MEMORY HIERARCHY STACK        |  🌐 NETWORK TELEMETRY                     |
-|  - Smart Cache -> VRAM -> RAM      |  - Live Bandwidth Throughput (RX ▼ / TX ▲)|
-|  - ZRAM (Compressed Pool)          |  - Interface Diagnostic & Active IP      |
-|  - External SWAP Drive Partition   |  - Top 5 Network Processes (RX/TX split) |
-+-------------------------------------------------------------------------------+
-|  💽 MULTI-DISK STORAGE (Selected: NVMe / SATA SSD / USB Flash Drive)         |
-|  - Quick-Select Disk Dropdown with Persistent Window Memory                   |
-|  - Read / Write Throughput & Free Storage Bar                                 |
-|  - SMART Health (PASSED), TBW Written & Drive Temperature                     |
-|  - Isolated Per-Device Top 5 Disk I/O Processes (ETW / procfs)                |
-+-------------------------------------------------------------------------------+
-|  🔋 POWER & SENSORS                                                          |
-|  - Battery Model, Chemistry, Health %, Cycle Count, Voltage, Runtime ETA      |
-|  - CPU Package Temperature (hwmon / MSR-level helper)                        |
-+-------------------------------------------------------------------------------+
++-------------------------------------------------------------------------------------------+
+|  RizkybyMONITOR  |  🎨 Neon Cyberpunk ▼  |  🌙 ☀️  |  ▶ ⏸ ■  |  🌡️ 45°C  🔋 95%  🗗  📌  ⏻	|
++-------------------------------------------------------------------------------------------+
+|  ⚙️ CPU (P/E Cores & Smart Cache)   	|  ⚡ GPU (Intel Iris Xe / NVIDIA eGPU)				|
+|  - Left: Usage Chart & Top 5 Procs 	|  - Dynamic GPU Switcher Dropdown         			|
+|  - Right: P-Cores & E-Cores Grid   	|  - RCS/CUDA, Tensor & RT Core Gauges     			|
+|  - L1/L2/L3 Smart Cache Speed      	|  - Dedicated VRAM & Shared VRAM Meters   			|
++-------------------------------------------------------------------------------------------+
+|  🧠 MEMORY HIERARCHY STACK        	 	|  🌐 NETWORK TELEMETRY                     			|
+|  - Smart Cache -> VRAM -> RAM      	|  - Live Bandwidth Throughput (RX ▼ / TX ▲)		|
+|  - ZRAM (Compressed Pool)          	|  - Interface Diagnostic & Active IP      			|
+|  - External SWAP Drive Partition   	|  - Top 5 Network Processes (RX/TX split) 			|
++-------------------------------------------------------------------------------------------+
+|  💽 MULTI-DISK STORAGE (Selected: NVMe / SATA SSD / USB Flash Drive)         				|
+|  - Quick-Select Disk Dropdown with Persistent Window Memory                   			|
+|  - Read / Write Throughput & Free Storage Bar                                 			|
+|  - SMART Health (PASSED), TBW Written & Drive Temperature                     			|
+|  - Isolated Per-Device Top 5 Disk I/O Processes (ETW / procfs)                			|
++-------------------------------------------------------------------------------------------+
+|  🔋 POWER & SENSORS                                                          				|
+|  - Battery Model, Chemistry, Health %, Cycle Count, Voltage, Runtime ETA      			|
+|  - CPU Package Temperature (hwmon / MSR-level helper)                        				|
++-------------------------------------------------------------------------------------------+
 ```
 
 ---
@@ -96,6 +105,9 @@ https://github.com/user-attachments/assets/60072469-1e95-41e1-89f1-4d564b85b6c1
 | :--- | :--- |
 | **Super + Left-Click Drag** *(or Header Drag)* | Move and drag the frameless window freely across screens |
 | **Super + Right-Click Drag** *(or Alt + Right-Click)* | Interactively resize the frameless window from anywhere |
+| **Alt + S** *(or Left-Click Autoscroll Button)* | Cycle autoscroll mode (`▶ Always Active` / `⏸ Smart` / `■ Disabled`) |
+| **Alt + F** *(or Right-Click Autoscroll Button)* | Open/close floating Telemetry Refresh Interval settings panel (min 500ms) |
+| **Mouse Wheel on Refresh Interval** | Increase / decrease telemetry refresh rate directly on the panel |
 | **Left Click on Card** | Toggle **Fullscreen Zoom Mode** for focused inspection |
 | **Right Click on Card** | Toggle **Detailed Text Mode** (CLI diagnostic logs) for that card |
 | **Middle Click on Card** | Copy that card's visible telemetry metrics to the system clipboard |

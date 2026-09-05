@@ -911,10 +911,6 @@ header {
             box-shadow: 0 0 12px 2px rgba(0, 0, 0, 0.15), 0 0 28px 6px rgba(0, 0, 0, 0.05) !important;
         }
 
-        #globalTooltip {
-            transition: opacity 0.3s, -webkit-mask-image 0.6s ease, mask-image 0.6s ease !important;
-        }
-
         .disk-select-dropdown {
             appearance: none;
             -webkit-appearance: none;
@@ -1162,26 +1158,47 @@ header {
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
         }
 
-        /* DEFINISI SIFAT TOOLTIP SESUAI TEMA */
-        #globalTooltip {
+        /* DEFINISI SIFAT TOOLTIP & PANEL INTERVAL SESUAI TEMA */
+        #globalTooltip, #telemetry-interval-popup {
             background: var(--card-bg) !important;
             color: var(--text-main) !important;
             border: 1px solid var(--glass-border) !important;
             backdrop-filter: blur(16px) !important;
             -webkit-backdrop-filter: blur(16px) !important;
+        }
+
+        #globalTooltip {
             transition: opacity 0.3s ease, box-shadow 0.3s ease, -webkit-mask-image 0.6s ease, mask-image 0.6s ease !important;
         }
 
-        /* 1. Dark Mode Tooltip: Efek GLOW (Cahaya Pendaran Lembut) */
+        /* Animasi Fade & Scale Halus untuk Panel Refresh */
+        #telemetry-interval-popup {
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.94);
+            transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1), transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease !important;
+        }
+        #telemetry-interval-popup.visible {
+            opacity: 1 !important;
+            pointer-events: auto !important;
+            transform: scale(1) !important;
+        }
+
+        /* 1. Dark Mode: Efek GLOW Lembut & Dalam */
         html[data-mode="dark"] #globalTooltip,
         body[data-mode="dark"] #globalTooltip,
-        #globalTooltip {
+        html[data-mode="dark"] #telemetry-interval-popup,
+        body[data-mode="dark"] #telemetry-interval-popup,
+        #globalTooltip,
+        #telemetry-interval-popup {
             box-shadow: 0 0 20px rgba(255, 255, 255, 0.18), 0 0 40px rgba(255, 255, 255, 0.08), 0 8px 32px rgba(0, 0, 0, 0.6) !important;
         }
 
-        /* 2. Light Mode Tooltip: Efek SHADOW Bersih (Tanpa Glow) */
+        /* 2. Light Mode: Efek SHADOW Bersih (Tanpa Glow) */
         html[data-mode="light"] #globalTooltip,
-        body[data-mode="light"] #globalTooltip {
+        body[data-mode="light"] #globalTooltip,
+        html[data-mode="light"] #telemetry-interval-popup,
+        body[data-mode="light"] #telemetry-interval-popup {
             box-shadow: 0 12px 36px rgba(0, 0, 0, 0.14), 0 4px 12px rgba(0, 0, 0, 0.06) !important;
         }
 
@@ -1835,11 +1852,29 @@ header {
 
                     <div class="sensor-item" data-tooltip="temperature"><span style="color:var(--accent-red)">🌡️</span> <span id="temp-val">0°C</span></div>
                     <div class="sensor-item" data-tooltip="battery"><span style="color:var(--accent-green)">🔋</span> <span id="batt-val">100%</span></div>
+
+                    <!-- Tombol Autoscroll Mandiri (Klik Kiri: Cycle Char ▶ ⏸ ■ | Klik Kanan: Muncul Popup Interval) -->
+                    <button id="btn-autoscroll-toggle" class="mode-btn" onclick="cycleAutoscrollMode()" oncontextmenu="openTelemetryIntervalPopup(event); return false;" data-tooltip="autoscroll_ctrl" style="font-weight: 700; font-size: 0.95rem; color: var(--accent-blue); -webkit-app-region: no-drag; cursor: pointer; min-width: 2.2rem; height: 2.2rem; display: inline-flex; align-items: center; justify-content: center;">▶</button>
+
                     <button id="btn-app-duplicate" class="mode-btn" onclick="duplicateWindow()" oncontextmenu="toggleAlwaysOnTop(); return false;" data-tooltip="duplicate" style="font-weight: 700; font-size: 1.05rem; color: var(--accent-blue); -webkit-app-region: no-drag;">🗗</button>
                     <button id="btn-app-quit" class="mode-btn" onclick="quitApp()" oncontextmenu="exitWindow(); return false;" data-tooltip="quit" style="font-weight: 700; font-size: 1.05rem; color: var(--accent-blue); -webkit-app-region: no-drag; cursor: pointer;">⏻</button>
                 </div>
             </div>
         </header>
+
+        <!-- Floating Popup Telemetry Rate (Tooltip Theme, Smooth Fade, Adaptive Glow) -->
+        <div id="telemetry-interval-popup" style="display: none; position: fixed; z-index: 999999; padding: 10px 14px; border-radius: 8px; flex-direction: column; gap: 8px; font-size: 0.82rem; -webkit-app-region: no-drag;">
+            <div style="font-weight: 600; font-size: 0.76rem; color: var(--accent-blue); display: flex; justify-content: space-between; align-items: center; gap: 14px;">
+                <span>⏱️ Telemetry Refresh Rate</span>
+                <span id="interval-display-ms" style="color: var(--text-muted); font-size: 0.72rem; font-family: monospace;">1000ms</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <input id="input-telemetry-interval" type="text" value="1.0s" title="Type interval or scroll mouse wheel" style="width: 68px; height: 1.85rem; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 6px; padding: 0 4px; color: var(--text-color); font-size: 0.85rem; font-weight: 700; text-align: center; outline: none; cursor: ns-resize;" onkeydown="if(event.key==='Enter') applyTelemetryInterval();">
+                <button class="mode-btn" onclick="stepInterval(1)" title="Increase interval" style="width: 1.85rem; height: 1.85rem; padding: 0; border: 1px solid var(--glass-border); border-radius: 6px; font-size: 0.75rem; display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">▲</button>
+                <button class="mode-btn" onclick="stepInterval(-1)" title="Decrease interval" style="width: 1.85rem; height: 1.85rem; padding: 0; border: 1px solid var(--glass-border); border-radius: 6px; font-size: 0.75rem; display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">▼</button>
+                <button class="mode-btn" onclick="applyTelemetryInterval()" title="Apply changes" style="height: 1.85rem; padding: 0 12px; border: 1px solid var(--accent-blue); background: var(--accent-blue); color: #ffffff; border-radius: 6px; font-size: 0.76rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; cursor: pointer;">Apply</button>
+            </div>
+        </div>
 
         <!-- Pembungkus Utama Konteks Koordinat 0,0 -->
         <div class="main-content-area">
@@ -2199,7 +2234,7 @@ header {
                     <h1 class="about-title-main">RizkybyMONITOR</h1>
                     <div class="tech-pill-group" id="about-tech-pills"></div>
                     <div class="about-sub-large">
-                        <span class="about-version-tag">v1.1</span>
+                        <span class="about-version-tag">v1.2</span>
                         <span style="opacity:0.3">•</span>
                         <span class="about-author-name">Rizky Bayuu</span>
                     </div>
@@ -2216,7 +2251,7 @@ header {
                     <h1 class="about-title-main">RizkybyMONITOR Frozen</h1>
                     <div class="tech-pill-group" id="frozen-tech-pills"></div>
                     <div class="about-sub-large">
-                        <span class="about-version-tag">v1.1</span>
+                        <span class="about-version-tag">v1.2</span>
                         <span style="opacity:0.3">•</span>
                         <span class="about-author-name">Rizky Bayuu</span>
                     </div>
@@ -2231,7 +2266,7 @@ header {
     <script>
         // Global JS Tooltips
         window.hardwareTooltips = {
-            header: "<strong>🎮 RizkybyMONITOR - Window & Dashboard Controls:</strong><br>• <strong>Super + Left-Click Drag</strong> (or Header Drag): Move / drag frameless window<br>• <strong>Super + Right-Click Drag</strong> (or Alt + Right-Click Drag): Resize frameless window<br>• <strong>Left Click on Card:</strong> Toggle Fullscreen Zoom Mode<br>• <strong>Right Click on Card:</strong> Toggle Detailed CLI Diagnostic Text Mode<br>• <strong>Middle Click on Card:</strong> Copy visible card text to Clipboard<br>• <strong>Middle Click on Title:</strong> Copy full hover tooltip info to Clipboard<br>• <strong>Mouse Wheel on Color Selector:</strong> Quick cycle color palettes<br>• <strong>Left Click on Color Selector:</strong> Open color palette dropdown menu<br>• <strong>Mouse Wheel on Theme Toggle:</strong> Quick toggle Dark 🌙 / Light ☀️ mode<br>• <strong>Ctrl + Mouse Wheel:</strong> Adjust UI zoom & base font size<br>• <strong>Ctrl + N:</strong> Duplicate window into new instance<br>• <strong>Ctrl + Shift + A:</strong> Toggle Always-On-Top (Pin above windows)<br>• <strong>Ctrl + Q:</strong> Quit all windows and save layout<br>• <strong>Alt + Q:</strong> Exit current window and clear its local session memory",
+            header: "<strong>🎮 RizkybyMONITOR - Window & Dashboard Controls:</strong><br>• <strong>Super + Left-Click Drag</strong> (or Header Drag): Move / drag frameless window<br>• <strong>Super + Right-Click Drag</strong> (or Alt + Right-Click Drag): Resize frameless window<br>• <strong>Left Click on Card:</strong> Toggle Fullscreen Zoom Mode<br>• <strong>Right Click on Card:</strong> Toggle Detailed CLI Diagnostic Text Mode<br>• <strong>Middle Click on Card:</strong> Copy visible card text to Clipboard<br>• <strong>Middle Click on Title:</strong> Copy full hover tooltip info to Clipboard<br>• <strong>Mouse Wheel on Color Selector:</strong> Quick cycle color palettes<br>• <strong>Left Click on Color Selector:</strong> Open color palette dropdown menu<br>• <strong>Mouse Wheel on Theme Toggle:</strong> Quick toggle Dark 🌙 / Light ☀️ mode<br>• <strong>Ctrl + Mouse Wheel:</strong> Adjust UI zoom & base font size<br>• <strong>Ctrl + N:</strong> Duplicate window into new instance<br>• <strong>Ctrl + Shift + A:</strong> Toggle Always-On-Top (Pin above windows)<br>• <strong>Ctrl + Q:</strong> Quit all windows and save layout<br>• <strong>Alt + Q:</strong> Exit current window and clear its local session memory<br>• <strong>Alt + S:</strong> Cycle autoscroll mode (▶ Always Active / ⏸ Smart / ■ Disabled)<br>• <strong>Alt + F:</strong> Open/close floating Telemetry Refresh Interval settings panel (min 500ms)",
             cpu: "Loading CPU Model...",
             gpu: "Loading GPU Model...",
             gpu_select: "<strong>🎮 GPU Selector:</strong><br>Select between active integrated graphics (iGPU) and discrete/external graphics cards (eGPU NVIDIA / AMD).",
@@ -2251,6 +2286,7 @@ header {
             mode_toggle: "<strong>🌙 / ☀️ Theme Mode Toggle:</strong><br>Switch between Dark Mode and Light Mode with independent color palettes per window.",
             color_select: "<strong>🎨 Color Palette Selector:</strong><br>Choose a custom vibrant color palette for the current window.",
             network: "Loading Network Details...",
+            autoscroll_ctrl: "<strong>📜 Autoscroll & Telemetry Refresh Controls:</strong><br>• <strong>Left Click / Alt+S:</strong> Cycle autoscroll mode (▶ Always Active / ⏸ Smart / ■ Disabled)<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>▶ Play:</strong> Autoscroll is always active<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>⏸ Pause:</strong> Smart autoscroll (active window or hover interaction)<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>■ Stop:</strong> Autoscroll completely disabled (GPU saving)<br>• <strong>Right Click / Alt+F:</strong> Open/close floating Telemetry Refresh Interval settings panel (min 500ms)",
             duplicate: "<strong>🗗 Duplicate Controls:</strong><br>• <strong>Left Click / Ctrl+N:</strong> Duplicate Window<br>• <strong>Right Click / Ctrl+Shift+A:</strong> Toggle Keep Above Other (Pin Window)",
             pinned: "<strong>🖈 Pin Controls (Always On Top: ENABLED):</strong><br>• <strong>Left Click / Ctrl+N:</strong> Duplicate Window<br>• <strong>Right Click / Ctrl+Shift+A:</strong> Unpin / Disable Always-On-Top",
             quit: "<strong>⏻ Quit Controls:</strong><br>• <strong>Left Click / Ctrl+Q:</strong> Quit All Windows & Save Layout<br>• <strong>Right Click / Alt+Q:</strong> Exit Current Window & Remove Memory"
@@ -2426,7 +2462,7 @@ header {
         function startEasterCreditsScroll() {
             stopEasterCreditsScroll();
             stopChangelogHScroll(true);
-            if (!easterCreditContainer || !isEasterEggActive) return;
+            if (!easterCreditContainer || !isEasterEggActive || !isAutoscrollAllowed()) return;
 
             isEasterManualScrolling = false;
 
@@ -2458,7 +2494,7 @@ header {
         function resumeEasterCreditsScroll() {
             if (easterScrollAnimId) cancelAnimationFrame(easterScrollAnimId);
             const panel = easterCreditContainer;
-            if (!panel || isEasterManualScrolling) return;
+            if (!panel || isEasterManualScrolling || !isEasterEggActive || !isAutoscrollAllowed()) return;
 
             const maxScroll = panel.scrollHeight - panel.clientHeight;
             if (maxScroll <= 0) return;
@@ -2484,7 +2520,7 @@ header {
             let startTime = null;
 
             function scrollDownStep(timestamp) {
-                if (isEasterManualScrolling || !isEasterEggActive) return;
+                if (isEasterManualScrolling || !isEasterEggActive || !isAutoscrollAllowed()) return;
                 if (!startTime) startTime = timestamp;
                 const elapsed = timestamp - startTime;
 
@@ -4633,7 +4669,271 @@ header {
             }
         }, 500);
 
-        setInterval(fetchStats, 1000);
+		// =====================================================================
+        // PENGATURAN INTERVAL TELEMETRI & KONTROL AUTOSCROLL CYCLE (▶ ⏸ ■)
+        // =====================================================================
+        let g_autoscroll_mode = safeStorage.getItem(`rizkyby_${windowId}_autoscroll_mode`) || 'on';
+        let g_telemetry_interval_sec = parseFloat(safeStorage.getItem(`rizkyby_${windowId}_telemetry_sec`)) || 1.0;
+        if (isNaN(g_telemetry_interval_sec) || g_telemetry_interval_sec < 0.5) g_telemetry_interval_sec = 1.0;
+
+        let g_telemetry_timer = null;
+
+        function updateAutoscrollButtonUI() {
+            const btn = document.getElementById('btn-autoscroll-toggle');
+            if (!btn) return;
+            btn.removeAttribute('title'); // Hapus tooltip kotak hitam bawaan browser
+            if (g_autoscroll_mode === 'on') {
+                btn.innerHTML = '▶';
+                btn.style.color = 'var(--accent-blue)';
+                btn.style.textShadow = '0 0 10px var(--accent-blue)';
+            } else if (g_autoscroll_mode === 'smart') {
+                btn.innerHTML = '⏸';
+                btn.style.color = 'var(--accent-orange)';
+                btn.style.textShadow = '0 0 10px var(--accent-orange)';
+            } else {
+                btn.innerHTML = '■';
+                btn.style.color = 'var(--text-muted)';
+                btn.style.textShadow = 'none';
+            }
+        }
+
+        let g_smart_unfocused_active = false;
+
+        function resumeSmartAutoscroll() {
+            if (isEasterEggActive) {
+                if (typeof resumeEasterCreditsScroll === 'function') resumeEasterCreditsScroll();
+                if (typeof resumeChangelogHScroll === 'function') resumeChangelogHScroll();
+                document.querySelectorAll('.changelog-card-body').forEach(b => {
+                    if (typeof runCardVerticalScroll === 'function') runCardVerticalScroll(b);
+                });
+            } else if (document.body.classList.contains('show-about-panel')) {
+                if (typeof resumeAboutCreditsScroll === 'function') resumeAboutCreditsScroll();
+            }
+        }
+
+        function pauseSmartAutoscroll() {
+            if (typeof stopAboutAutoScroll === 'function') stopAboutAutoScroll();
+            if (typeof stopEasterCreditsScroll === 'function') stopEasterCreditsScroll();
+            if (typeof stopChangelogHScroll === 'function') stopChangelogHScroll();
+            document.querySelectorAll('.changelog-card-body').forEach(b => {
+                if (typeof stopCardVerticalScroll === 'function') stopCardVerticalScroll(b);
+            });
+        }
+
+        // Fungsi helper cek izin autoscroll global (Dashboard + Credit + Changelog)
+        function isAutoscrollAllowed() {
+            if (g_autoscroll_mode === 'on') return true;
+            if (g_autoscroll_mode === 'smart') {
+                // Kondisi 1: Window aktif / fokus
+                // Kondisi 2: Disabled window yang sedang di-hover + ada interaksi mouse
+                return document.hasFocus() || g_smart_unfocused_active;
+            }
+            return false;
+        }
+
+        function cycleAutoscrollMode() {
+            if (g_autoscroll_mode === 'on') {
+                g_autoscroll_mode = 'smart';
+                showCenterToast('⏸ Autoscroll: SMART (Active or Hover Interaction)');
+                if (isAutoscrollAllowed()) {
+                    resumeSmartAutoscroll();
+                } else {
+                    pauseSmartAutoscroll();
+                }
+            } else if (g_autoscroll_mode === 'smart') {
+                g_autoscroll_mode = 'off';
+                g_smart_unfocused_active = false;
+                showCenterToast('■ Autoscroll: OFF (Disabled)');
+                pauseSmartAutoscroll();
+            } else {
+                g_autoscroll_mode = 'on';
+                showCenterToast('▶ Autoscroll: ALWAYS ON');
+                resumeSmartAutoscroll();
+            }
+            safeStorage.setItem(`rizkyby_${windowId}_autoscroll_mode`, g_autoscroll_mode);
+            updateAutoscrollButtonUI();
+        }
+
+        // Listener saat window fokus / blur
+        window.addEventListener('focus', () => {
+            if (g_autoscroll_mode === 'smart') {
+                resumeSmartAutoscroll();
+            }
+        });
+        window.addEventListener('blur', () => {
+            g_smart_unfocused_active = false;
+            if (g_autoscroll_mode === 'smart') {
+                pauseSmartAutoscroll();
+            }
+        });
+
+        // Tangkap event interaktif di disabled window: scroll wheel & klik (kiri, tengah, kanan)
+        function triggerSmartMouseActivity() {
+            if (g_autoscroll_mode === 'smart' && !document.hasFocus()) {
+                if (!g_smart_unfocused_active) {
+                    g_smart_unfocused_active = true;
+                    resumeSmartAutoscroll();
+                }
+            }
+        }
+        window.addEventListener('wheel', triggerSmartMouseActivity, { passive: true });
+        window.addEventListener('mousedown', triggerSmartMouseActivity);
+        window.addEventListener('auxclick', triggerSmartMouseActivity);
+        window.addEventListener('contextmenu', triggerSmartMouseActivity);
+
+        // Saat cursor meninggalkan window (hover pergi), matikan autoscroll
+        function onSmartMouseLeaveWindow(e) {
+            if (!e.relatedTarget && !e.toElement) {
+                if (g_smart_unfocused_active) {
+                    g_smart_unfocused_active = false;
+                    if (g_autoscroll_mode === 'smart' && !document.hasFocus()) {
+                        pauseSmartAutoscroll();
+                    }
+                }
+            }
+        }
+        document.addEventListener('mouseleave', onSmartMouseLeaveWindow);
+        window.addEventListener('mouseout', onSmartMouseLeaveWindow);
+
+        function setTelemetryIntervalSeconds(sec, showToast = true) {
+            if (sec < 0.5) sec = 0.5; // Minimal 0.5s (500ms)
+            sec = Math.round(sec * 10) / 10;
+            g_telemetry_interval_sec = sec;
+            safeStorage.setItem(`rizkyby_${windowId}_telemetry_sec`, sec.toString());
+
+            const inputEl = document.getElementById('input-telemetry-interval');
+            const displayEl = document.getElementById('interval-display-ms');
+            if (inputEl) inputEl.value = sec.toFixed(1) + 's';
+            if (displayEl) displayEl.textContent = Math.round(sec * 1000) + 'ms';
+
+            // Restart interval telemetri
+            if (g_telemetry_timer) clearInterval(g_telemetry_timer);
+            g_telemetry_timer = setInterval(fetchStats, Math.round(sec * 1000));
+
+            // Kirim interval baru ke backend server C++
+            fetch('/api/config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ window_id: windowId, telemetry_interval: Math.round(sec * 1000) })
+            }).catch(() => {});
+
+            if (showToast) {
+                showCenterToast(`⏱️ Telemetry Rate: ${sec.toFixed(1)}s (${Math.round(sec * 1000)}ms) Applied`);
+            }
+        }
+
+        function stepInterval(direction) {
+            let cur = g_telemetry_interval_sec;
+            let step = 0.5;
+            if (direction > 0) {
+                if (cur < 0.99) step = 0.1;
+                else if (cur < 1.99) step = 0.2;
+                else step = 0.5;
+            } else {
+                if (cur <= 1.01) step = 0.1;
+                else if (cur <= 2.01) step = 0.2;
+                else step = 0.5;
+            }
+            let next = cur + (direction * step);
+            if (next < 0.5) next = 0.5;
+            next = Math.round(next * 10) / 10;
+            g_telemetry_interval_sec = next;
+
+            const inputEl = document.getElementById('input-telemetry-interval');
+            const displayEl = document.getElementById('interval-display-ms');
+            if (inputEl) inputEl.value = next.toFixed(1) + 's';
+            if (displayEl) displayEl.textContent = Math.round(next * 1000) + 'ms';
+        }
+
+        function applyTelemetryInterval() {
+            const inputEl = document.getElementById('input-telemetry-interval');
+            if (inputEl) {
+                let clean = inputEl.value.toLowerCase().replace('ms', '').replace('s', '').trim();
+                let num = parseFloat(clean);
+                if (isNaN(num)) num = 1.0;
+                if (num >= 50) num = num / 1000;
+                setTelemetryIntervalSeconds(num, true);
+            }
+            closeTelemetryIntervalPopup();
+        }
+
+        function closeTelemetryIntervalPopup() {
+            const popup = document.getElementById('telemetry-interval-popup');
+            if (popup && popup.classList.contains('visible')) {
+                popup.classList.remove('visible');
+                setTimeout(() => {
+                    if (!popup.classList.contains('visible')) popup.style.display = 'none';
+                }, 220);
+            }
+        }
+
+        function openTelemetryIntervalPopup(e) {
+            if (e) { e.preventDefault(); e.stopPropagation(); }
+            const popup = document.getElementById('telemetry-interval-popup');
+            const btn = document.getElementById('btn-autoscroll-toggle');
+            if (!popup || !btn) return;
+
+            if (popup.classList.contains('visible')) {
+                closeTelemetryIntervalPopup();
+                return;
+            }
+
+            popup.style.display = 'flex';
+
+            const rect = btn.getBoundingClientRect();
+            const popupW = popup.offsetWidth || 230;
+            const popupH = popup.offsetHeight || 80;
+
+            let left = rect.left + (rect.width / 2) - (popupW / 2);
+            let top = rect.bottom + 8;
+
+            // Anti-mentok tepi window
+            if (left + popupW > window.innerWidth - 12) left = window.innerWidth - popupW - 12;
+            if (left < 12) left = 12;
+            if (top + popupH > window.innerHeight - 12) top = rect.top - popupH - 8;
+            if (top < 12) top = 12;
+
+            popup.style.left = Math.round(left) + 'px';
+            popup.style.top = Math.round(top) + 'px';
+
+            // Picu Animasi Fade In
+            requestAnimationFrame(() => {
+                popup.classList.add('visible');
+            });
+
+            const input = document.getElementById('input-telemetry-interval');
+            const displayEl = document.getElementById('interval-display-ms');
+            if (input) {
+                input.value = g_telemetry_interval_sec.toFixed(1) + 's';
+                setTimeout(() => { input.focus(); input.select(); }, 50);
+
+                // Tambahkan Listener Roda Mouse (Scroll Up: Tambah | Scroll Down: Kurang)
+                if (!input._hasWheelHandler) {
+                    input._hasWheelHandler = true;
+                    input.addEventListener('wheel', (we) => {
+                        we.preventDefault();
+                        we.stopPropagation();
+                        if (we.deltaY < 0) stepInterval(1);
+                        else if (we.deltaY > 0) stepInterval(-1);
+                    }, { passive: false });
+                }
+            }
+            if (displayEl) displayEl.textContent = Math.round(g_telemetry_interval_sec * 1000) + 'ms';
+        }
+
+        // Klik di luar popup -> otomatis fade out tutup
+        document.addEventListener('click', (e) => {
+            const popup = document.getElementById('telemetry-interval-popup');
+            if (popup && popup.classList.contains('visible')) {
+                if (!e.target.closest('#telemetry-interval-popup') && !e.target.closest('#btn-autoscroll-toggle')) {
+                    closeTelemetryIntervalPopup();
+                }
+            }
+        });
+
+        // Jalankan polling telemetri perdana & sinkronkan tombol
+        updateAutoscrollButtonUI();
+        setTelemetryIntervalSeconds(g_telemetry_interval_sec, false);
         fetchStats();
     
         // --- AUTO-SCROLL LOGIC ---
@@ -4645,7 +4945,6 @@ header {
                 if (isVert) {
                     return Math.max(5000, Math.min(60000, 4000 + max * 30));
                 } else {
-                    // Crisp, smooth, clearly visible horizontal auto-scroll speed!
                     return Math.max(1500, Math.min(12000, 1000 + max * 40));
                 }
             }
@@ -4740,7 +5039,10 @@ header {
                         return; 
                     }
                     
-                    if (!paused) {
+                    // Cek izin scroll sesuai mode (mematuhi kondisi fokus maupun hover interaktif):
+                    let isScrollPermitted = isAutoscrollAllowed();
+
+                    if (!paused && isScrollPermitted) {
                         duration = calcDuration(scrollMax, isVertical);
                         let elapsed = currentTime - startTime;
                         let cycle = (elapsed / duration) % 2;
@@ -4764,14 +5066,12 @@ header {
             }
 
             document.querySelectorAll('.list-name, .metric-header:not(.no-autoscroll), .metric-value:not(.no-autoscroll), .auto-scroll-x, h1, h2, .sensor-item, .disk-selector-wrapper').forEach(el => {
-                // Abaikan total elemen jika berada di dalam credit-frozen
                 if (el.closest('#credit-frozen')) return;
                 if (el.closest('#about-panel') && !document.body.classList.contains('show-about-panel')) return;
                 startScrollAnimation(el, false);
             });
 
             document.querySelectorAll('.card-content, .list-container, .cores-grid, .cores-wrapper, #cpu-cores-wrapper, .card-inner-details').forEach(el => {
-                // Abaikan total elemen jika berada di dalam credit-frozen
                 if (el.closest('#credit-frozen')) return;
                 if (el.closest('#about-panel') && !document.body.classList.contains('show-about-panel')) return;
                 startScrollAnimation(el, true);
@@ -5176,6 +5476,20 @@ header {
 
         // Keyboard Shortcuts Manager
         document.addEventListener('keydown', (e) => {
+            // Alt + S: Toggle Autoscroll Mode (Cycle ▶ ⏸ ■)
+            if (e.altKey && e.key.toLowerCase() === 's') {
+                e.preventDefault();
+                cycleAutoscrollMode();
+                return;
+            }
+
+            // Alt + F: Toggle Telemetry Refresh Rate Panel
+            if (e.altKey && e.key.toLowerCase() === 'f') {
+                e.preventDefault();
+                openTelemetryIntervalPopup();
+                return;
+            }
+
             // Ctrl + Shift + A: Toggle Keep Above Other (Pin Window)
             if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'a') {
                 e.preventDefault();
@@ -5389,6 +5703,12 @@ header {
                 if (res.ok) cfg = await res.json();
             } catch(e) {}
 
+            // Sinkronkan interval telemetri dari config server
+            if (cfg.telemetry_interval) {
+                const sec = cfg.telemetry_interval / 1000;
+                if (sec >= 0.5) setTelemetryIntervalSeconds(sec, false);
+            }
+
             // Sinkronkan status On-Top jika ada di config server
             const winState = (cfg.per_window_settings && cfg.per_window_settings[windowId]) ? cfg.per_window_settings[windowId] : cfg;
             const isPinned = (winState && winState.on_top !== undefined) ? winState.on_top : (_isWindowOnTop);
@@ -5541,7 +5861,7 @@ header {
         function resumeAboutCreditsScroll() {
             if (aboutScrollAnimId) cancelAnimationFrame(aboutScrollAnimId);
             const panel = document.getElementById('about-panel');
-            if (!panel || isAboutManualScrolling) return;
+            if (!panel || isAboutManualScrolling || !isAutoscrollAllowed()) return;
 
             const maxScroll = panel.scrollHeight - panel.clientHeight;
             if (maxScroll <= 0) return;
@@ -5834,7 +6154,7 @@ header {
                                     <div style="display: flex; flex-direction: column; gap: 0.3rem; padding-bottom: 0.6rem; border-bottom: 1px solid rgba(255,255,255,0.12); flex-shrink: 0;">
                                         <div style="display: flex; justify-content: space-between; align-items: center;">
                                             <span style="font-size: 1.15rem; font-weight: 800; color: var(--accent-orange);">v1.1 Stable</span>
-                                            <span class="tech-pill" style="border-color: var(--accent-orange); color: var(--accent-orange); font-size: 0.72rem;">Current Production</span>
+                                            <span class="tech-pill" style="border-color: var(--accent-orange); color: var(--accent-orange); font-size: 0.72rem;">Milestone Stable</span>
                                         </div>
                                         <div style="font-size: 0.8rem; color: var(--text-muted);">Major performance, memory topology &amp; multi-GPU update.</div>
                                     </div>
@@ -5930,6 +6250,99 @@ header {
                                     </div>
                                 </div>
 
+                                <!-- CARD 3: VERSION 1.2 STABLE (CURRENT PRODUCTION) -->
+                                <div class="changelog-card" style="text-align: left;">
+                                    <div style="display: flex; flex-direction: column; gap: 0.3rem; padding-bottom: 0.6rem; border-bottom: 1px solid rgba(255,255,255,0.12); flex-shrink: 0;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <span style="font-size: 1.15rem; font-weight: 800; color: var(--accent-green, #10b981);">v1.2 Stable & Refined</span>
+                                            <span class="tech-pill" style="border-color: var(--accent-green, #10b981); color: var(--accent-green, #10b981); font-size: 0.72rem;">Current Production</span>
+                                        </div>
+                                        <div style="font-size: 0.8rem; color: var(--text-muted);">Smart autoscroll engine, live telemetry panel &amp; CPU thermal helper.</div>
+                                    </div>
+
+                                    <div class="changelog-card-body">
+                                        <div class="changelog-item">
+                                            <span class="changelog-item-num">01.</span>
+                                            <div class="changelog-item-content">
+                                                <div class="changelog-item-title">Tri-State Smart Autoscroll Engine (▶ ⏸ ■)</div>
+                                                <div class="changelog-item-desc">Introduced multi-mode global autoscroll (Always Active, Smart Focus/Hover Interaction, and Full Disabled for GPU power saving) with Alt+S toggle shortcut.</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="changelog-item">
+                                            <span class="changelog-item-num">02.</span>
+                                            <div class="changelog-item-content">
+                                                <div class="changelog-item-title">Interactive Inactive Window Autoscroll</div>
+                                                <div class="changelog-item-desc">Engineered smart dual-condition autoscroll: runs on active window, or on disabled windows upon mouse wheel/click interaction and pauses on mouseleave.</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="changelog-item">
+                                            <span class="changelog-item-num">03.</span>
+                                            <div class="changelog-item-content">
+                                                <div class="changelog-item-title">Windows Super Key (Win Key) Stuck/Hold State Fix</div>
+                                                <div class="changelog-item-desc">Eliminated low-level keyboard hook swallow bug causing Super key to freeze down in OS state. Implemented harmless dummy keystroke masking to block Start Menu without sticking.</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="changelog-item">
+                                            <span class="changelog-item-num">04.</span>
+                                            <div class="changelog-item-content">
+                                                <div class="changelog-item-title">Adaptive Telemetry Refresh Glassmorphism Panel &amp; Alt+F</div>
+                                                <div class="changelog-item-desc">Frosted glassmorphism telemetry panel with mouse wheel interval adjustment (min 500ms), glow styling, theme adaptation, and Alt+F shortcut.</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="changelog-item">
+                                            <span class="changelog-item-num">05.</span>
+                                            <div class="changelog-item-content">
+                                                <div class="changelog-item-title">Dedicated CPU Thermal Sensor Helper (.NET 8)</div>
+                                                <div class="changelog-item-desc">Integrated self-contained LibreHardwareMonitor sensor helper (rzkmon_sensor.exe) with 2s cache TTL delivering accurate real-time CPU Package &amp; Core thermal telemetry.</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="changelog-item">
+                                            <span class="changelog-item-num">06.</span>
+                                            <div class="changelog-item-content">
+                                                <div class="changelog-item-title">Synchronized Dual-Axis Easter Egg Autoscroll</div>
+                                                <div class="changelog-item-desc">Unified autoscroll lifecycle across Easter egg cards (horizontal wrapper) and card-body version text (vertical scroll) with smart pause/resume synchronization.</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="changelog-item">
+                                            <span class="changelog-item-num">07.</span>
+                                            <div class="changelog-item-content">
+                                                <div class="changelog-item-title">Dynamic Interval &amp; Multi-Window Config API</div>
+                                                <div class="changelog-item-desc">Restructured saveWindowConfig() to persist telemetry refresh rates via POST /api/config, seamlessly syncing user intervals across Win32 &amp; Linux GTK3.</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="changelog-item">
+                                            <span class="changelog-item-num">08.</span>
+                                            <div class="changelog-item-content">
+                                                <div class="changelog-item-title">Automated Builder &amp; Package Manager Resilience</div>
+                                                <div class="changelog-item-desc">Fixed CMD parenthesis syntax crash, added forced winget resolution (--force), direct %ProgramFiles% detection, and automated Microsoft bootstrap fallback.</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="changelog-item">
+                                            <span class="changelog-item-num">09.</span>
+                                            <div class="changelog-item-content">
+                                                <div class="changelog-item-title">Multi-Window Positional Cascading &amp; C++ Headers</div>
+                                                <div class="changelog-item-desc">Restored pws_pos multi-window coordinate cascading in wWinMain and added std::atomic header to guarantee clean cross-platform C++17 compilation.</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="changelog-item">
+                                            <span class="changelog-item-num">10.</span>
+                                            <div class="changelog-item-content">
+                                                <div class="changelog-item-title">Tooltip Whitespace Indentation &amp; Multilingual Polish</div>
+                                                <div class="changelog-item-desc">Standardized non-breaking spacing (&amp;nbsp;) on status symbols and eliminated redundant Indonesian/English text duplicates for consistent English UI.</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                             </div>
 
                             <!-- 3. BAGIAN BAWAH: DESKRIPSI NYANTOL DI ALIGNMENT PALING BAWAH -->
@@ -6003,7 +6416,7 @@ header {
 
         function runCardVerticalScroll(cardBody) {
             stopCardVerticalScroll(cardBody);
-            if (cardBody._isHovered || cardBody._isManualScrolling || !document.getElementById('easter-credit-container')) return;
+            if (cardBody._isHovered || cardBody._isManualScrolling || !document.getElementById('easter-credit-container') || !isAutoscrollAllowed()) return;
 
             const easeInOutCubic = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
             const inverseEaseInOutCubic = r => r <= 0.5 ? Math.cbrt(r / 4) : 1 - Math.cbrt((1 - r) * 2) / 2;
@@ -6022,7 +6435,7 @@ header {
             let startTime = performance.now() - (cycle * duration);
 
             function step(currentTime) {
-                if (cardBody._isHovered || cardBody._isManualScrolling || !document.getElementById('easter-credit-container')) {
+                if (cardBody._isHovered || cardBody._isManualScrolling || !document.getElementById('easter-credit-container') || !isAutoscrollAllowed()) {
                     cardBody._vAnimId = null;
                     return;
                 }
@@ -6095,6 +6508,13 @@ header {
                 }
             });
 
+            // Picu langsung autoscroll vertikal isi kartu tanpa perlu menunggu manual wheel
+            if (isAutoscrollAllowed()) {
+                panel.querySelectorAll('.changelog-card-body').forEach(cardBody => {
+                    runCardVerticalScroll(cardBody);
+                });
+            }
+
             // Wheel manual pada wadah luar kartu
             if (!panel._hasManualHScrollListener) {
                 panel._hasManualHScrollListener = true;
@@ -6136,7 +6556,7 @@ header {
         function resumeChangelogHScroll() {
             if (changelogHScrollAnimId) cancelAnimationFrame(changelogHScrollAnimId);
             const panel = document.getElementById('changelog-cards-wrapper');
-            if (!panel || isChangelogManualScrolling || !document.getElementById('easter-credit-container')) return;
+            if (!panel || isChangelogManualScrolling || !document.getElementById('easter-credit-container') || !isAutoscrollAllowed()) return;
 
             const maxScroll = panel.scrollWidth - panel.clientWidth;
             if (maxScroll <= 0) return;
@@ -6172,7 +6592,7 @@ header {
             let startTime = null;
 
             function scrollRightStep(timestamp) {
-                if (isChangelogManualScrolling || !document.getElementById('easter-credit-container')) return;
+                if (isChangelogManualScrolling || !document.getElementById('easter-credit-container') || !isAutoscrollAllowed()) return;
                 if (!startTime) startTime = timestamp;
                 const elapsed = timestamp - startTime;
 

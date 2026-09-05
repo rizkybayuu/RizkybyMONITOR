@@ -11,6 +11,7 @@
 #include <thread>
 #include <mutex>
 #include <chrono>
+#include <atomic>
 #include <cstring>
 #include <cstdlib>
 #include <cctype>
@@ -75,6 +76,7 @@ static int g_next_win_id = 1;
 static std::string g_app_dir;
 static int g_server_port = 8080;
 static bool g_running = true;
+static std::atomic<int> g_telemetry_interval_ms{1000};
 
 // Metrics Cache Protected by Mutex
 static std::mutex g_stats_mutex;
@@ -2228,8 +2230,9 @@ static void updateTelemetry() {
     json << "    {\"label\":\"Storage Diagnostics\",\"val\":\"Sysfs Block Engine / SMART Passthrough\"},";
     json << "    {\"label\":\"Graphics Provider\",\"val\":\"Linux Direct Rendering Manager (DRM / KMS)\"}";
     json << "  ]},";
+    std::string latency_val = std::to_string(g_telemetry_interval_ms.load()) + "ms Non-Blocking Polling (Sub-millisecond Compute)";
     json << "  {\"heading\":\"Architecture Details\",\"specs\":[";
-    json << "    {\"label\":\"Telemetry Latency\",\"val\":\"500ms Non-Blocking Polling (Sub-millisecond Compute)\"},";
+    json << "    {\"label\":\"Telemetry Latency\",\"val\":\"" << escapeJson(latency_val) << "\"},";
     json << "    {\"label\":\"Subprocess Overhead\",\"val\":\"Minimal Subprocess Overhead (Kernel /sys & /proc with smartctl/nvidia-smi passthrough)\"},";
     json << "    {\"label\":\"Memory Topology\",\"val\":\"Physical RAM, ZRAM Compressed Engine & SWAP Pool\"},";
     json << "    {\"label\":\"Display Mode\",\"val\":\"Frameless GTK App-Paintable (Native Cairo Clipping)\"}";
@@ -2252,7 +2255,9 @@ static void updateTelemetry() {
     static void telemetryLoop() {
         while (g_running) {
             updateTelemetry();
-            usleep(500000); // 500ms
+            int interval = g_telemetry_interval_ms.load();
+            if (interval < 500) interval = 500;
+            usleep((useconds_t)interval * 1000);
         }
     }
 
@@ -2281,6 +2286,7 @@ static void updateTelemetry() {
         std::string cfg_path = g_app_dir + "/config.json";
         std::stringstream ss;
         ss << "{\n";
+        ss << "  \"telemetry_interval\": " << g_telemetry_interval_ms.load() << ",\n";
         ss << "  \"window_count\": " << g_windows.size() << ",\n";
         ss << "  \"per_window_settings\": {\n";
         bool first = true;
@@ -2617,6 +2623,18 @@ static void updateTelemetry() {
                 }
                 if (wid < 1) wid = 1;
 
+                size_t ti_pos = body.find("\"telemetry_interval\"");
+                if (ti_pos == std::string::npos) ti_pos = body.find("\"telemetry_ms\"");
+                if (ti_pos != std::string::npos) {
+                    size_t val_pos = body.find_first_of("0123456789", ti_pos + 14);
+                    if (val_pos != std::string::npos) {
+                        int interval = std::atoi(body.c_str() + val_pos);
+                        if (interval >= 500) {
+                            g_telemetry_interval_ms = interval;
+                        }
+                    }
+                }
+
                 std::lock_guard<std::recursive_mutex> lock(g_win_mutex);
                 if (g_windows.find(wid) == g_windows.end()) {
                     WindowInstance inst;
@@ -2867,6 +2885,14 @@ static void updateTelemetry() {
         int num_windows = 1;
         std::string cfg = readFile(g_app_dir + "/config.json");
         if (!cfg.empty()) {
+            size_t ti_pos = cfg.find("\"telemetry_interval\"");
+            if (ti_pos != std::string::npos) {
+                size_t val_pos = cfg.find_first_of("0123456789", ti_pos + 20);
+                if (val_pos != std::string::npos) {
+                    int interval = std::atoi(cfg.c_str() + val_pos);
+                    if (interval >= 500) g_telemetry_interval_ms = interval;
+                }
+            }
             size_t pos = cfg.find("\"window_count\":");
             if (pos != std::string::npos) {
                 sscanf(cfg.c_str() + pos, "\"window_count\": %d", &num_windows);

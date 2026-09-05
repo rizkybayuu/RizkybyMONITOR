@@ -205,6 +205,7 @@ static std::string g_data_dir; // %LOCALAPPDATA%\RizkybyMONITOR — selalu writa
 static int g_server_port = 8080;
 static std::atomic<bool> g_running{true};
 static std::atomic<bool> g_is_quitting{false};
+static std::atomic<int> g_telemetry_interval_ms{1000};
 
 static std::mutex g_stats_mutex;
 static std::string g_cached_stats_json;
@@ -1629,8 +1630,19 @@ static int readCpuTempFromHelper() {
 
 static int getCpuTemperature(double real_cpu_usage_pct) {
     // 0. Cek via rzkmon_sensor.exe (LibreHardwareMonitorLib, MSR-level, paling akurat)
+    // Caching 2 detik untuk menghindari spawn proses .NET 8 berkali-kali per detik (hemat CPU & baterai)
+    static int s_cached_helper_temp = -999;
+    static ULONGLONG s_last_helper_time = 0;
+    ULONGLONG now = GetTickCount64();
+    if (now - s_last_helper_time < 2000 && s_cached_helper_temp > 0) {
+        return s_cached_helper_temp;
+    }
     int helper_temp = readCpuTempFromHelper();
-    if (helper_temp > 0) return helper_temp;
+    s_last_helper_time = now;
+    if (helper_temp > 0) {
+        s_cached_helper_temp = helper_temp;
+        return helper_temp;
+    }
 
     // 1. Cek via PDH Thermal Zone
     static HQUERY hThermalQuery = NULL;
@@ -3896,8 +3908,9 @@ static void updateTelemetry() {
     json << "    {\"label\":\"Storage Diagnostics\",\"val\":\"ATA Passthrough / SCSI-SAT SMART\"},";
     json << "    {\"label\":\"Graphics Provider\",\"val\":\"DXGI 1.4 Dynamic Composition\"}";
     json << "  ]},";
+    std::string latency_val = std::to_string(g_telemetry_interval_ms.load()) + "ms Non-Blocking Polling (Sub-millisecond Compute)";
     json << "  {\"heading\":\"Architecture Details\",\"specs\":[";
-    json << "    {\"label\":\"Telemetry Latency\",\"val\":\"500ms Non-Blocking Polling (Sub-millisecond Compute)\"},";
+    json << "    {\"label\":\"Telemetry Latency\",\"val\":\"" << escapeJson(latency_val) << "\"},";
     json << "    {\"label\":\"Subprocess Overhead\",\"val\":\"Zero WMIC / Zero CMD spawns\"},";
     json << "    {\"label\":\"Memory Topology\",\"val\":\"Physical RAM, Smart Cache, Dedicated & Shared VRAM\"},";
     json << "    {\"label\":\"Display Mode\",\"val\":\"Frameless DWM Composition\"}";
@@ -3922,13 +3935,17 @@ static void updateTelemetry() {
 static void telemetryLoop() {
     while (g_running) {
         updateTelemetry();
-        Sleep(500); // 500ms sampling interval
+        int interval = g_telemetry_interval_ms.load();
+        if (interval < 500) interval = 500;
+        Sleep(interval);
     }
 }
 
 // =============================================================================
 // Native HTTP Server (Winsock2) & Thread-Safe Win32 Message Dispatcher
 // =============================================================================
+static void saveWindowConfig(); // Forward declaration
+
 static void handleClient(SOCKET client_fd) {
     char buf[8192] = {};
     int n = recv(client_fd, buf, sizeof(buf) - 1, 0);
@@ -4006,6 +4023,19 @@ static void handleClient(SOCKET client_fd) {
             size_t val_pos = body.find_first_of("0123456789", wid_pos + 11);
             if (val_pos != std::string::npos) {
                 win_id = std::atoi(body.c_str() + val_pos);
+            }
+        }
+
+        size_t ti_pos = body.find("\"telemetry_interval\"");
+        if (ti_pos == std::string::npos) ti_pos = body.find("\"telemetry_ms\"");
+        if (ti_pos != std::string::npos) {
+            size_t val_pos = body.find_first_of("0123456789", ti_pos + 14);
+            if (val_pos != std::string::npos) {
+                int interval = std::atoi(body.c_str() + val_pos);
+                if (interval >= 500) {
+                    g_telemetry_interval_ms = interval;
+                    saveWindowConfig();
+                }
             }
         }
 
@@ -4234,6 +4264,7 @@ static void saveWindowConfig() {
 
     std::stringstream cfg;
     cfg << "{\n";
+    cfg << "  \"telemetry_interval\": " << g_telemetry_interval_ms.load() << ",\n";
     
     // Simpan daftar ID window yang benar-benar aktif
     cfg << "  \"active_windows\": [";
@@ -4810,6 +4841,18 @@ static HWND findWindowUnderPoint(POINT pt) {
     return NULL;
 }
 
+// Cek apakah window yang sedang aktif/fokus milik aplikasi RizkybyMONITOR
+static bool isAnyRizkybyWindowActive() {
+    HWND fg = GetForegroundWindow();
+    if (!fg) return false;
+    fg = GetAncestor(fg, GA_ROOT);
+    std::lock_guard<std::recursive_mutex> lock(g_win_mutex);
+    for (auto& [id, w] : g_windows) {
+        if (w.hwnd == fg) return true;
+    }
+    return false;
+}
+
 static LRESULT CALLBACK LowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
     if (nCode == HC_ACTION) {
         MSLLHOOKSTRUCT* ms = (MSLLHOOKSTRUCT*)lParam;
@@ -4819,7 +4862,11 @@ static LRESULT CALLBACK LowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lPara
             HWND target = findWindowUnderPoint(ms->pt);
             if (target) {
                 g_drag_active = true;
-                g_super_click_consumed = true; // klik ini jatuh di window kita -> Super key-up nanti diblok
+                g_super_click_consumed = true;
+                // Masking Windows Key dengan dummy keystroke agar Windows membatalkan Start Menu secara alami
+                keybd_event(VK_CONTROL, 0, 0, 0);
+                keybd_event(VK_CONTROL, 0, KEYEVENTF_KEYUP, 0);
+
                 g_drag_is_resize = (wParam == WM_RBUTTONDOWN);
                 g_drag_start_cursor = ms->pt;
                 GetWindowRect(target, &g_drag_start_rect);
@@ -4854,6 +4901,14 @@ static LRESULT CALLBACK LowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lPara
             g_drag_active = false;
             g_drag_hwnd = NULL;
             saveWindowConfig(); // fix: resize custom (Super+klik-kanan) gak lewat WM_EXITSIZEMOVE
+
+            // Saat mouse dilepas di luar window RizkybyMONITOR, pastikan hold super langsung mati total
+            if (!isAnyRizkybyWindowActive()) {
+                g_super_physically_down = false;
+                g_super_click_consumed = false;
+                keybd_event(VK_LWIN, 0, KEYEVENTF_KEYUP, 0);
+                keybd_event(VK_RWIN, 0, KEYEVENTF_KEYUP, 0);
+            }
             return 1;
         }
     }
@@ -4869,14 +4924,26 @@ static LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lP
             bool isKeyDown = (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN);
             bool isKeyUp   = (wParam == WM_KEYUP   || wParam == WM_SYSKEYUP);
 
+            // KONDISI KHUSUS: Jika RizkybyMONITOR tidak punya active window,
+            // dan sedang tidak drag, maka event hold super WAJIB HILANG
+            if (!isAnyRizkybyWindowActive() && !g_drag_active && !g_super_click_consumed) {
+                g_super_physically_down = false;
+                g_super_click_consumed = false;
+                return CallNextHookEx(g_keyboard_hook, nCode, wParam, lParam);
+            }
+
             if (isKeyDown) {
                 g_super_physically_down = true;
             } else if (isKeyUp) {
-                g_super_physically_down = false; // update state kita DULU, sebelum keputusan swallow
+                g_super_physically_down = false;
 
                 if (g_super_click_consumed) {
-                    g_super_click_consumed = false; // sekali pakai, lalu reset
-                    return 1; // swallow -> Start Menu/Search tidak terbuka
+                    g_super_click_consumed = false;
+                    // Batalkan Start Menu tanpa memblokir KeyUp
+                    keybd_event(VK_CONTROL, 0, 0, 0);
+                    keybd_event(VK_CONTROL, 0, KEYEVENTF_KEYUP, 0);
+                    // Rilis resmi tombol Super di OS Windows agar tidak ada efek tertahan
+                    keybd_event(kb->vkCode, 0, KEYEVENTF_KEYUP, 0);
                 }
             }
         }
@@ -4968,6 +5035,14 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR, int) {
     std::vector<int> active_ids;
     std::string cfg = readFile(g_data_dir + "\\config.json");
     if (!cfg.empty()) {
+        size_t tip = cfg.find("\"telemetry_interval\"");
+        if (tip != std::string::npos) {
+            size_t val_pos = cfg.find_first_of("0123456789", tip + 20);
+            if (val_pos != std::string::npos) {
+                int interval = std::atoi(cfg.c_str() + val_pos);
+                if (interval >= 500) g_telemetry_interval_ms = interval;
+            }
+        }
         size_t awp = cfg.find("\"active_windows\"");
         if (awp != std::string::npos) {
             size_t start = cfg.find('[', awp);
