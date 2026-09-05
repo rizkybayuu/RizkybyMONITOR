@@ -125,6 +125,8 @@ struct WindowInstance {
     int font_size;
     std::string selected_disk;
     std::string app_title; // <-- Simpan nama window individual di memory
+    std::string autoscroll_mode = "on"; // <-- Ingatan mode autoscroll per window
+    int telemetry_interval = 1000;      // <-- Ingatan refresh rate telemetri per window (ms)
 };
 
 struct ProcEntry {
@@ -4107,6 +4109,30 @@ static void handleClient(SOCKET client_fd) {
                         w.mode = body.substr(q1 + 1, q2 - q1 - 1);
                     }
                 }
+
+                size_t auto_pos = body.find("\"autoscroll_mode\"");
+                if (auto_pos != std::string::npos) {
+                    size_t q1 = body.find('"', auto_pos + 17);
+                    size_t q2 = body.find('"', q1 + 1);
+                    if (q1 != std::string::npos && q2 != std::string::npos) {
+                        w.autoscroll_mode = body.substr(q1 + 1, q2 - q1 - 1);
+                    }
+                }
+
+                size_t ti_win_pos = body.find("\"telemetry_interval\"");
+                if (ti_win_pos == std::string::npos) ti_win_pos = body.find("\"telemetry_ms\"");
+                if (ti_win_pos != std::string::npos) {
+                    size_t val_pos = body.find_first_of("0123456789", ti_win_pos + 14);
+                    if (val_pos != std::string::npos) {
+                        int interval = std::atoi(body.c_str() + val_pos);
+                        if (interval >= 500) {
+                            w.telemetry_interval = interval;
+                        }
+                    }
+                }
+
+                // SIMPAN LANGSUNG KE CONFIG.JSON SECARA REAL-TIME
+                saveWindowConfig();
             }
         }
         response_body = "{\"status\":\"ok\"}";
@@ -4320,6 +4346,8 @@ static void saveWindowConfig() {
             << ",\"font_size\":" << w.font_size
             << ",\"selected_disk\":\"" << escapeJson(w.selected_disk) << "\""
             << ",\"app_title\":\"" << escapeJson(w.app_title.empty() ? "RizkybyMONITOR" : w.app_title) << "\""
+            << ",\"autoscroll_mode\":\"" << escapeJson(w.autoscroll_mode.empty() ? "on" : w.autoscroll_mode) << "\""
+            << ",\"telemetry_interval\":" << (w.telemetry_interval >= 500 ? w.telemetry_interval : 1000)
             << "}";
     }
     cfg << "\n  }\n}";
@@ -4622,6 +4650,8 @@ static void createNewWindow(int win_id) {
     bool on_top = false;
     std::string details = "[]", mode = "dark", selected_disk = "disk0";
     std::string app_title = "RizkybyMONITOR";
+    std::string autoscroll_mode = "on";
+    int telemetry_interval = 1000;
     int font_size = 14;
 
     std::string cfg = readFile(g_data_dir + "\\config.json");
@@ -4673,6 +4703,8 @@ static void createNewWindow(int win_id) {
                     mode = getString("mode", "dark");
                     selected_disk = getString("selected_disk", "disk0");
                     app_title = getString("app_title", "RizkybyMONITOR");
+                    autoscroll_mode = getString("autoscroll_mode", "on");
+                    telemetry_interval = getInt("telemetry_interval", 1000);
 
                     size_t det_pos = cfg.find("\"details\"", obj_start);
                     if (det_pos != std::string::npos && det_pos < obj_end) {
@@ -4728,6 +4760,8 @@ static void createNewWindow(int win_id) {
     wi.font_size = font_size;
     wi.selected_disk = selected_disk;
     wi.app_title = app_title;
+    wi.autoscroll_mode = autoscroll_mode;
+    wi.telemetry_interval = telemetry_interval;
 
     {
         std::lock_guard<std::recursive_mutex> lock(g_win_mutex);

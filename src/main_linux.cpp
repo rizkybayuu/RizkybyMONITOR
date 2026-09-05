@@ -68,6 +68,8 @@ struct WindowInstance {
     int font_size = 14;
     std::string selected_disk = "sda";
     std::string app_title = "";
+    std::string autoscroll_mode = "on";
+    int telemetry_interval = 1000;
 };
 
 static std::recursive_mutex g_win_mutex;
@@ -2305,6 +2307,8 @@ static void updateTelemetry() {
             << ", \"font_size\": " << win.font_size
             << ", \"selected_disk\": \"" << win.selected_disk << "\""
             << ", \"app_title\": \"" << escapeJson(win.app_title) << "\""
+            << ", \"autoscroll_mode\": \"" << escapeJson(win.autoscroll_mode.empty() ? "on" : win.autoscroll_mode) << "\""
+            << ", \"telemetry_interval\": " << (win.telemetry_interval >= 500 ? win.telemetry_interval : 1000)
             << "}";
         }
         ss << "\n  }\n}\n";
@@ -2387,6 +2391,8 @@ static void updateTelemetry() {
         int w_font_size = 14;
         std::string w_selected_disk = "sda";
         std::string w_app_title = "";
+        std::string w_autoscroll_mode = "on";
+        int w_telemetry_interval = 1000;
 
         std::string cfg_str = readFile(g_app_dir + "/config.json");
         if (!cfg_str.empty()) {
@@ -2440,6 +2446,18 @@ static void updateTelemetry() {
                         if (q1 != std::string::npos && q2 != std::string::npos) {
                             w_app_title = block.substr(q1 + 1, q2 - q1 - 1);
                         }
+                    }
+                    size_t auto_pos = block.find("\"autoscroll_mode\":");
+                    if (auto_pos != std::string::npos) {
+                        size_t q1 = block.find('"', auto_pos + 18);
+                        size_t q2 = (q1 != std::string::npos) ? block.find('"', q1 + 1) : std::string::npos;
+                        if (q1 != std::string::npos && q2 != std::string::npos) {
+                            w_autoscroll_mode = block.substr(q1 + 1, q2 - q1 - 1);
+                        }
+                    }
+                    size_t ti_pos = block.find("\"telemetry_interval\":");
+                    if (ti_pos != std::string::npos) {
+                        sscanf(block.c_str() + ti_pos, "\"telemetry_interval\": %d", &w_telemetry_interval);
                     }
                 }
             }
@@ -2496,6 +2514,8 @@ static void updateTelemetry() {
         inst.font_size = w_font_size;
         inst.selected_disk = w_selected_disk;
         inst.app_title = w_app_title;
+        inst.autoscroll_mode = w_autoscroll_mode;
+        inst.telemetry_interval = w_telemetry_interval;
 
         {
             std::lock_guard<std::recursive_mutex> lock(g_win_mutex);
@@ -2694,6 +2714,24 @@ static void updateTelemetry() {
                         g_windows[wid].app_title = body.substr(q1 + 1, q2 - q1 - 1);
                         if (g_windows[wid].window != NULL) {
                             gtk_window_set_title(GTK_WINDOW(g_windows[wid].window), g_windows[wid].app_title.c_str());
+                        }
+                    }
+                }
+                size_t auto_pos = body.find("\"autoscroll_mode\":");
+                if (auto_pos == std::string::npos) auto_pos = body.find("\"autoscroll_mode\"");
+                if (auto_pos != std::string::npos) {
+                    size_t q1 = body.find('"', auto_pos + 17);
+                    size_t q2 = (q1 != std::string::npos) ? body.find('"', q1 + 1) : std::string::npos;
+                    if (q1 != std::string::npos && q2 != std::string::npos) {
+                        g_windows[wid].autoscroll_mode = body.substr(q1 + 1, q2 - q1 - 1);
+                    }
+                }
+                if (ti_pos != std::string::npos) {
+                    size_t val_pos = body.find_first_of("0123456789", ti_pos + 14);
+                    if (val_pos != std::string::npos) {
+                        int interval = std::atoi(body.c_str() + val_pos);
+                        if (interval >= 500) {
+                            g_windows[wid].telemetry_interval = interval;
                         }
                     }
                 }

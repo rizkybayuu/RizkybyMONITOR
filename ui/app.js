@@ -20,7 +20,7 @@
             mode_toggle: "<strong>🌙 / ☀️ Theme Mode Toggle:</strong><br>Switch between Dark Mode and Light Mode with independent color palettes per window.",
             color_select: "<strong>🎨 Color Palette Selector:</strong><br>Choose a custom vibrant color palette for the current window.",
             network: "Loading Network Details...",
-            autoscroll_ctrl: "<strong>📜 Autoscroll & Telemetry Refresh Controls:</strong><br>• <strong>Left Click / Alt+S:</strong> Cycle autoscroll mode (▶ Always Active / ⏸ Smart / ■ Disabled)<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>▶ Play:</strong> Autoscroll is always active<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>⏸ Pause:</strong> Smart autoscroll (active window or hover interaction)<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>■ Stop:</strong> Autoscroll completely disabled (GPU saving)<br>• <strong>Right Click / Alt+F:</strong> Open/close floating Telemetry Refresh Interval settings panel (min 500ms)",
+            autoscroll_ctrl: "<strong>📜 Autoscroll & Telemetry Refresh Controls:</strong><br>• <strong>Left Click / Alt+S:</strong> Cycle autoscroll mode (▶ Always Active / ⏸ Smart / ■ Disabled)<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>▶ Play:</strong> Autoscroll is always active<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>⏸ Smart:</strong> Smart autoscroll (active window or hover interaction)<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>■ Stop:</strong> Autoscroll completely disabled (GPU saving)<br>• <strong>Right Click / Alt+F:</strong> Open/close floating Telemetry Refresh Interval settings panel (min 500ms)",
             duplicate: "<strong>🗗 Duplicate Controls:</strong><br>• <strong>Left Click / Ctrl+N:</strong> Duplicate Window<br>• <strong>Right Click / Ctrl+Shift+A:</strong> Toggle Keep Above Other (Pin Window)",
             pinned: "<strong>🖈 Pin Controls (Always On Top: ENABLED):</strong><br>• <strong>Left Click / Ctrl+N:</strong> Duplicate Window<br>• <strong>Right Click / Ctrl+Shift+A:</strong> Unpin / Disable Always-On-Top",
             quit: "<strong>⏻ Quit Controls:</strong><br>• <strong>Left Click / Ctrl+Q:</strong> Quit All Windows & Save Layout<br>• <strong>Right Click / Alt+Q:</strong> Exit Current Window & Remove Memory"
@@ -2486,6 +2486,7 @@
             }
             safeStorage.setItem(`rizkyby_${windowId}_autoscroll_mode`, g_autoscroll_mode);
             updateAutoscrollButtonUI();
+			saveConfig({ autoscroll_mode: g_autoscroll_mode });
         }
 
         // Listener saat window fokus / blur
@@ -3437,16 +3438,34 @@
                 if (res.ok) cfg = await res.json();
             } catch(e) {}
 
-            // Sinkronkan interval telemetri dari config server
-            if (cfg.telemetry_interval) {
-                const sec = cfg.telemetry_interval / 1000;
+            // Sinkronkan status per-window dari config server
+            const winState = (cfg.per_window_settings && cfg.per_window_settings[windowId]) ? cfg.per_window_settings[windowId] : cfg;
+
+            // 1. Restore Refresh Rate per-window
+            const savedIntervalMs = (winState && winState.telemetry_interval) ? winState.telemetry_interval : cfg.telemetry_interval;
+            if (savedIntervalMs) {
+                const sec = savedIntervalMs / 1000;
                 if (sec >= 0.5) setTelemetryIntervalSeconds(sec, false);
             }
 
-            // Sinkronkan status On-Top jika ada di config server
-            const winState = (cfg.per_window_settings && cfg.per_window_settings[windowId]) ? cfg.per_window_settings[windowId] : cfg;
-            const isPinned = (winState && winState.on_top !== undefined) ? winState.on_top : (_isWindowOnTop);
+            // 2. Restore Autoscroll Mode per-window
+            const savedAutoscroll = (winState && winState.autoscroll_mode) ? winState.autoscroll_mode : safeStorage.getItem(`rizkyby_${windowId}_autoscroll_mode`);
+            if (savedAutoscroll && ['on', 'smart', 'off'].includes(savedAutoscroll)) {
+                g_autoscroll_mode = savedAutoscroll;
+                safeStorage.setItem(`rizkyby_${windowId}_autoscroll_mode`, g_autoscroll_mode);
+                updateAutoscrollButtonUI();
+                if (g_autoscroll_mode === 'off') {
+                    pauseSmartAutoscroll();
+                } else if (g_autoscroll_mode === 'smart') {
+                    if (isAutoscrollAllowed()) resumeSmartAutoscroll();
+                    else pauseSmartAutoscroll();
+                } else {
+                    resumeSmartAutoscroll();
+                }
+            }
 
+            // 3. Sinkronkan status On-Top
+            const isPinned = (winState && winState.on_top !== undefined) ? winState.on_top : (_isWindowOnTop);
             _isWindowOnTop = !!isPinned;
             safeStorage.setItem(`rizkyby_${windowId}_on_top`, _isWindowOnTop ? 'true' : 'false');
 
