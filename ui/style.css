@@ -1606,19 +1606,10 @@ header {
             pointer-events: auto !important;
         }
 
-        /* 3. TEKS JUDUL & PARAGRAF: MEMBLOKIR KLIK HANYA SEUKURAN HURUF/TEKS (FIT-CONTENT) */
-        .easter-credit-wrapper .tech-pill,
-        .easter-credit-wrapper .github-link,
-        .easter-credit-wrapper .about-section-heading,
-        .easter-credit-wrapper .about-spec-row,
-        .easter-credit-wrapper .about-spec-label,
-        .easter-credit-wrapper .about-spec-value,
-        .easter-credit-wrapper .closing-note,
-        .easter-credit-wrapper div[style*="font-size"],
-        .easter-credit-wrapper p {
+        /* 3. BOUNDING BOX UTAMA KREDIT KEDUA: SELURUH WADAH KARTU & ISINYA AKTIF MENERIMA POINTER */
+        .easter-credit-wrapper .easter-about-card,
+        .easter-credit-wrapper .easter-about-card * {
             pointer-events: auto !important;
-            width: fit-content !important;
-            max-width: 100% !important;
         }
 
         /* 4. KUNCI MUTLAK: WADAH HORIZONTAL CHANGELOG TIDAK MEMBLOKIR KLIK */

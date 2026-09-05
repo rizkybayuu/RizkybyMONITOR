@@ -3708,7 +3708,7 @@
                 if (isAboutOpen) {
                     // MODE: KREDIT KEDUA (Special Thanks)
                     container.innerHTML = `
-                        <div style="animation: cardsMoveUpIn 0.4s ease-out forwards; max-width: 760px; width: 100%; padding: 0.8rem 1.5rem 8rem 1.5rem; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1.8rem;">
+                        <div class="easter-about-card" style="animation: cardsMoveUpIn 0.4s ease-out forwards; max-width: 760px; width: 100%; padding: 0.8rem 1.5rem 8rem 1.5rem; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 1.8rem;">
                             <div style="font-size: clamp(1.4rem, 2.2vw, 2rem); font-weight: 800; color: var(--accent-cyan); letter-spacing: 1.5px; margin-top: 0.2rem;">
                                 SYSTEM ARCHITECTURE &amp; ACKNOWLEDGMENTS
                             </div>
